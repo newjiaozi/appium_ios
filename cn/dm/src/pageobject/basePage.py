@@ -10,12 +10,12 @@ By.IOS_PREDICATE = MobileBy.IOS_PREDICATE
 class BasePage():
 
     ##IOS
-
-
+    UPDATENEXT = (By.ACCESSIBILITY_ID,"下次再说")
     BTNBACK = (By.ACCESSIBILITY_ID,"btnBack")
     SYSALLOW = (By.ACCESSIBILITY_ID,"允许")
     SYSCONFIRM = (By.ACCESSIBILITY_ID,"确定")
     H5CLOSE = (By.ACCESSIBILITY_ID,"Close")
+    FIRSTCLOSE = (By.IOS_PREDICATE,"type == 'XCUIElementTypeButton' and name == 'Close' and label == 'Close'") ##首次安装app启动的关闭
 
     UPDATE = (By.ACCESSIBILITY_ID,'daily')
     DISCOVERY = (By.ACCESSIBILITY_ID,'home')
@@ -54,32 +54,40 @@ class BasePage():
     PREVIOUS = (By.ACCESSIBILITY_ID,"list bt b")
     NEXT = (By.ACCESSIBILITY_ID,"list bt f")
     INPUTCOMMENT = (By.ACCESSIBILITY_ID,"请给作品留下评论~")
-    COMMENTSUBMIT = (By.ACCESSIBILITY_ID,"发表")
+    COMMENTSUBMIT = (By.ACCESSIBILITY_ID,"发送")
     COMMENTCOUNT = (By.ACCESSIBILITY_ID,"viewer comment")
-    TOTOP = (By.ACCESSIBILITY_ID,"viewer top btn")
+    COMMENTMORE = (By.ACCESSIBILITY_ID,"viewer_cmt_more.png")
+    VIEWERTOTOP = (By.ACCESSIBILITY_ID,"viewer top btn")
     BACK = (By.ACCESSIBILITY_ID,"back bt s")
     VIEWERSUBSCRIBE = (By.ACCESSIBILITY_ID, "关注")
-    SCROLLVIEWER = (By.CLASS_NAME,"XCUIElementTypeScrollView")
+    SCROLLVIEWER = (By.ACCESSIBILITY_ID,"viewerScrollView") ###阅读漫画viewer
+    VIEWERLIKEBUTTON = (By.ACCESSIBILITY_ID,"viewer_like_button_icon")
+    VIEWERFAVOURITEBUTTON = (By.ACCESSIBILITY_ID,"viewer_favorite_button_icon")
+    VIEWERSHAREBUTTON = (By.ACCESSIBILITY_ID,"viewer_share_button_icon")
+    SHANGYIHUA = (By.ACCESSIBILITY_ID,"上一话")
+    XIAYIHUA = (By.ACCESSIBILITY_ID,"下一话")
+    VIEWERPLUSFAVOURITE = (By.ACCESSIBILITY_ID,"viewer_favorDefault")
+    LOOKFIRSTEPISODE = (By.ACCESSIBILITY_ID,"看第1话")
 
 
     ##搜索
-    INPUTSEARCH = (By.IOS_PREDICATE,"type == 'XCUIElementTypeTextField' and value == '搜索'")
-    SEARCHCANCEL = (By.ACCESSIBILITY_ID,"取消")
+    # INPUTSEARCH = (By.IOS_PREDICATE,"type == 'XCUIElementTypeTextField' and value == '搜索'")
+    # SEARCHCANCEL = (By.ACCESSIBILITY_ID,"取消")
     SEARCHHOT = (By.ACCESSIBILITY_ID,"热门搜索")
 
     ##搜索分类
-    SEARCHLOVE = (By.ACCESSIBILITY_ID,"search_love")
-    SEARCHBOY = (By.ACCESSIBILITY_ID,"search_boy")
-    SEARCHANCIENTCHINA = (By.ACCESSIBILITY_ID,"search_ancientchinese")
-    SEARCHFANTASY = (By.ACCESSIBILITY_ID,"search_fantasy")
-    SEARCHCOMEDY = (By.ACCESSIBILITY_ID,"search_comedy")
-    SEARCHCAMPUS = (By.ACCESSIBILITY_ID,"search_campus")
-    SEARCHMETROPOLIS = (By.ACCESSIBILITY_ID,"search_metropolis")
-    SEARCHHEALING = (By.ACCESSIBILITY_ID,"search_healing")
-    SEARCHSUSPENSE = (By.ACCESSIBILITY_ID,"search_suspense")
-    SEARCHINSPIRATIONAL = (By.ACCESSIBILITY_ID,"search_inspirational")
-    SEARCHFILMADAPTATION = (By.ACCESSIBILITY_ID,"search_filmadaptation")
-    SEARCHTERMINATION = (By.ACCESSIBILITY_ID,"search_termination")
+    # SEARCHLOVE = (By.ACCESSIBILITY_ID,"search_love")
+    # SEARCHBOY = (By.ACCESSIBILITY_ID,"search_boy")
+    # SEARCHANCIENTCHINA = (By.ACCESSIBILITY_ID,"search_ancientchinese")
+    # SEARCHFANTASY = (By.ACCESSIBILITY_ID,"search_fantasy")
+    # SEARCHCOMEDY = (By.ACCESSIBILITY_ID,"search_comedy")
+    # SEARCHCAMPUS = (By.ACCESSIBILITY_ID,"search_campus")
+    # SEARCHMETROPOLIS = (By.ACCESSIBILITY_ID,"search_metropolis")
+    # SEARCHHEALING = (By.ACCESSIBILITY_ID,"search_healing")
+    # SEARCHSUSPENSE = (By.ACCESSIBILITY_ID,"search_suspense")
+    # SEARCHINSPIRATIONAL = (By.ACCESSIBILITY_ID,"search_inspirational")
+    # SEARCHFILMADAPTATION = (By.ACCESSIBILITY_ID,"search_filmadaptation")
+    # SEARCHTERMINATION = (By.ACCESSIBILITY_ID,"search_termination")
 
     ##搜索结果
     SEARCHRESUTCOUNT = (By.IOS_PREDICATE,"type == 'XCUIElementTypeOther' and value ENDSWITH '结果'")
@@ -98,3 +106,32 @@ class BasePage():
 
 
     BACKRE = (By.IOS_PREDICATE,'type== "XCUIElementTypeButton" and name STARTSWITH "back"')
+
+    SUBSCRIBEUNLOGIN = (By.ACCESSIBILITY_ID, "若想查看我的关注，请先登录。")
+    HAVENOTSUBSCRIBE = (By.ACCESSIBILITY_ID,'没有关注的漫画。 添加到我的关注 新的章节更新时，会提醒您。')
+    LOGIN = (By.ACCESSIBILITY_ID,"登录")
+
+
+    ##检索
+    SEARCHCANCEL = (By.ACCESSIBILITY_ID,"取消")
+    SEARCHINPUT = (By.IOS_PREDICATE,'type== "XCUIElementTypeTextField" and  value == "搜索"')
+    SEARCHLOVE = (By.ACCESSIBILITY_ID,"search_love")
+    SEARCHBOY = (By.ACCESSIBILITY_ID,"search_boy")
+    SEARCHANCIENTCHINESE = (By.ACCESSIBILITY_ID,"search_ancientchinese")
+    SEARCHFANTASY = (By.ACCESSIBILITY_ID,"search_fantasy")
+    SEARCHCOMEDY = (By.ACCESSIBILITY_ID,"search_comedy")
+    SEARCHCAMPUS = (By.ACCESSIBILITY_ID,"search_campus")
+    SEARCHMETROPOLIS = (By.ACCESSIBILITY_ID,"search_metropolis")
+    SEARCHHEALING = (By.ACCESSIBILITY_ID,"search_healing")
+    SEARCHSUSPENSE = (By.ACCESSIBILITY_ID,"search_suspense")
+    SEARCHINSPIRATIONAL = (By.ACCESSIBILITY_ID,"search_inspirational")
+    SEARCHFILMADAPTATION = (By.ACCESSIBILITY_ID,"search_filmadaptation")
+    SEARCHTERMINATION = (By.ACCESSIBILITY_ID,"search_termination")
+    SEARCHRESULT = (By.IOS_PREDICATE,'type == "XCUIElementTypeStaticText" and value ENDSWITH "结果"')
+
+
+    ##
+    CONTAINS = [By.IOS_PREDICATE,'name CONTAINS "%s"']
+    ENDS = [By.IOS_PREDICATE,'name ENDSWITH "%s"']
+
+    IDTOBE = [By.ACCESSIBILITY_ID,"%s"]

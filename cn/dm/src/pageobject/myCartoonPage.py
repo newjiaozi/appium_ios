@@ -37,3 +37,4 @@ class MyCartoonPage(BasePage):
 
     ##我的评论
     COMMENTEPISODENO = (By.IOS_PREDICATE,"type =='XCUIElementTypeStaticText' and value CONTAINS '#'")
+    COMMENTUNLOGIN = (By.ACCESSIBILITY_ID,'若想查看评论，请先登录。')

@@ -22,7 +22,7 @@ class BaseTestcase(unittest.TestCase):
         warnings.simplefilter("ignore",ResourceWarning)
         desired_caps = {}
         # cls.appPath = "/Users/dongman/PycharmProjects/appium_ios/cn/dm/src/app/linewebtoon_CN.ipa"
-        cls.appPath = "https://deploy.dongmancorp.cn/load/app/ios/qa2/2.0.10.7_qa2_0430/2.0.10.7_qa2_0430.ipa"
+        cls.appPath = "https://deploy.dongmancorp.cn/load/app/ios/qa2/2.1.1.5_qa2_0524/2.1.1.5_qa2_0524.ipa"
         desired_caps['platformName'] = 'iOS'
         ## xs max
         desired_caps['udid'] = '00008020-000E502E0E04002E'
@@ -40,11 +40,15 @@ class BaseTestcase(unittest.TestCase):
         desired_caps['noReset'] = True
         desired_caps['app'] = cls.appPath
         desired_caps['useNewWDA'] = False
+        desired_caps['newCommandTimeout'] = 200
+        # desired_caps['automationName'] = "XCUITest"
         # desired_caps['useNewWDA'] = True
         desired_caps['automationName'] = "XCUITest"
         desired_caps['bundleId'] = 'com.naver.linewebtoon.cn'
 
+
         cls.driver = webdriver.Remote('http://127.0.0.1:4723/wd/hub', desired_caps)
+        cls.driver.implicitly_wait(20)
         cls.BPA = BPA(cls.driver)
         cls.MPA = MPA(cls.driver)
         cls.DPA = DPA(cls.driver)

@@ -6,7 +6,9 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException
 import os
 import time,datetime
-from ..pageobject.basePage import BasePage as BP
+from cn.dm.src.pageobject.basePage import BasePage as BP
+from cn.dm.src.interface import appGetHotWordNew
+from  urllib.parse import quote
 
 class BasePageAction():
 
@@ -27,6 +29,27 @@ class BasePageAction():
         try:
             ele = WebDriverWait(self.driver,seconds,poll_frequency=poll_frequency).until(EC.presence_of_all_elements_located(loc))
             return ele
+        except TimeoutException as e:
+            print(e)
+            print(loc)
+            return False
+
+
+    def getChildEle(self,ele,loc):
+        try:
+            subele = ele.find_element(loc)
+            return subele
+        except TimeoutException as e:
+            print(e)
+            print(loc)
+            return False
+
+    def getChildEleClick(self,ele,loc):
+        try:
+            # print(type(loc),loc)
+            subele = ele.find_element(*loc)
+            subele.click()
+            return subele
         except TimeoutException as e:
             print(e)
             print(loc)
@@ -62,7 +85,7 @@ class BasePageAction():
         self.driver.get_screenshot_as_file(_name)
         src = "..\screenshots\%s" % name+".png"
         if printPng:
-            print(r'''<img src="%(src)s"  alt="%(filename)s"  title="%(filename)s" height="100" width="100" class="pimg"  onclick="javascript:window.open(this.src);"/>%(filename)s''' % {'filename':name,"src":src})
+            print(r'''<img src="%(src)s"  alt="%(filename)s"  title="%(filename)s" height="400" width="250" class="pimg"  onclick="javascript:window.open(this.src);"/>%(filename)s''' % {'filename':name,"src":src})
 
     def waitStaleness(self,ele,seconds=5,poll_frequency=0.5):
         try:
@@ -104,27 +127,32 @@ class BasePageAction():
     ## all=True时，将所有的value返回；all=False时，只返回今天周几
     def getWeekday(self,all=True):
         week_day_dict = {
-                    0 : '周一',
-                    1 : '周二',
-                    2 : '周三',
-                    3 : '周四',
-                    4 : '周五',
-                    5 : '周六',
-                    6 : '周日',
-                    7 : '完结',
+                    0 : ['周一','MONDAY'],
+                    1 : ['周二','TUESDAY'],
+                    2 : ['周三','WEDNESDAY'],
+                    3 : ['周四','THURSDAY'],
+                    4 : ['周五','FRIDAY'],
+                    5 : ['周六','SATURDAY'],
+                    6 : ['周日','SUNDAY'],
+                    7 : ['完结','COMPLETE'],
                     }
         cur_time = datetime.datetime.now()
         day = cur_time.weekday()
         if all:
-            week_day_dict[day]="今天"
+            week_day_dict[day][0]="今天"
             return week_day_dict.values()
         else:
+            week_day_dict[day][0]="今天"
             return week_day_dict[day]
 
 
     def startAppCloseAlert(self):
         self.waitEleClick(BP.SYSALLOW,seconds=5)
         self.waitEleClick(BP.SYSCONFIRM,seconds=5)
+        self.waitEleClick(BP.UPDATENEXT, seconds=10)
+        ele = self.waitElePresents(BP.FIRSTCLOSE,seconds=5)
+        if ele:
+            self.tapXY(ele)
         self.waitEleClick(BP.H5CLOSE,seconds=5)
 
     def waitTextInPage(self,text,seconds=10,poll_frequency=0.5):
@@ -248,16 +276,15 @@ class BasePageAction():
         else:
             self.driver.execute_script('mobile: terminateApp',{'bundleId':'com.naver.linewebtoon.cn'})
 
-
     def Scroll2Tail(self):
         moon = self.waitElePresents(BP.MOONICON)
         self.waitStaleness(moon)
         # sv = self.waitElePresents(BP.SCROLLVIEWER)
         topEle = self.waitElePresents(BP.TOTOP)
-        self.driver.execute_script('mobile: scroll', {'element': topEle.get_attribute("name"),'toVisible':True})
+        self.driver.execute_script('mobile: scroll', {'element': topEle.get_attribute("name").e,'toVisible':True})
         self.savePNG("SCROLLTO TOP")
 
-    def Scroll2Subscribe(self):
+    def scroll2Subscribe(self):
         moon = self.waitElePresents(BP.MOONICON)
         self.waitStaleness(moon)
         # sv = self.waitElePresents(BP.SCROLLVIEWER)
@@ -265,9 +292,11 @@ class BasePageAction():
         self.driver.execute_script('mobile: scroll', {'element': subEle.get_attribute("name"),'toVisible':True})
         self.savePNG("SCROLLTO 关注")
 
+    def scroll2Visible(self,ele):
+        self.driver.execute_script('mobile: scroll', {'element': ele,'toVisible':True})
+
     def clickScrollviewer(self):
         self.waitEleClick(BP.SCROLLVIEWER)
-
 
     def clickViewerList(self):
         self.waitEleClick(BP.TOLIST)
@@ -282,4 +311,100 @@ class BasePageAction():
         ##点击 viwer下方【关注】
         self.waitEleClick("关注")
 
+    def getXY(self,ele,center=True):
+        location = ele.rect
+        # print(location)
+        if center:
+            return location["x"]+location['width']/2,location['y']+location['height']/2
+        else:
+            return location
 
+    def tapXY(self,ele):
+        x,y = self.getXY(ele)
+        self.driver.execute_script('mobile: tap', {'x':x,'y':y})
+
+    ##确认viewer
+    def checkViewer(self,titleName,episodeName):
+        if self.waitElePresents((BP.IDTOBE[0],BP.IDTOBE[1] % episodeName)):
+            self.savePNG(titleName+episodeName)
+        else:
+            self.waitEleClick(BP.SCROLLVIEWER)
+            self.waitElePresents((BP.IDTOBE[0],BP.IDTOBE[1] % episodeName))
+            self.savePNG(titleName+episodeName)
+        # self.waitElePresents(BP.SCROLLVIEWER)
+        top = self.waitElePresents(BP.VIEWERTOTOP)
+        if top:
+            self.scroll2Visible(top)
+            self.savePNG("TOP"+titleName+episodeName)
+    def clickViewer(self):
+        self.waitEleClick(BP.SCROLLVIEWER)
+
+    def ifHasNavigator(self):
+        return self.waitElePresents(BP.MOONICON,seconds=2)
+
+    def clickViewerList(self):
+        self.waitEleClick(BP.TOLIST)
+
+    def clickViewerTopShare(self):
+        self.waitEleClick(BP.SHARE)
+
+    def clickViewerBottomShare(self):
+        self.waitEleClick(BP.VIEWERSHAREBUTTON)
+
+    def clickViewerBottomLike(self):
+        self.waitEleClick(BP.VIEWERLIKEBUTTON)
+
+    def clickViewerBottomFavourite(self):
+        self.waitEleClick(BP.VIEWERFAVOURITEBUTTON)
+
+    def clickShangYiHua(self):
+        self.waitEleClick(BP.SHANGYIHUA)
+
+    def clickXiaYiHua(self):
+        self.waitEleClick(BP.XIAYIHUA)
+
+    def clickToTopViewer(self):
+        self.waitEleClick(BP.VIEWERTOTOP)
+
+    def clickToMoreComment(self):
+        self.waitEleClick(BP.COMMENTMORE)
+
+    def sendCommentInViewer(self,text):
+        commentInput = self.waitEleClick(BP.INPUTCOMMENT)
+        commentInput.send_keys(text)
+        self.waitEleClick(BP.COMMENTSUBMIT)
+
+    ##确认预览
+    def checkPreview(self):
+        pass
+
+    ##确认最新话弹窗
+    def checkPopup(self):
+        pass
+
+    def hideKeyboard(self):
+        self.driver.hide_keyboard()
+
+    ##小于1000展示赏我个赞吧！，>=100万展示为汉字万
+    def handleLikeCount(self,count):
+        if count<1000:
+            return "赏我个赞吧！"
+        elif count<1000000:
+            return '{:,d}'.format(count)
+        else:
+            return '{:.1f}'.format(count/10000)+"万"
+
+    def getHotWord(self):
+        return appGetHotWordNew()
+
+    def sleep(self,seconds=2):
+        time.sleep(seconds)
+
+    def getBackFromViewer(self):
+        self.waitEleClick(BP.VIEWERBACK)
+
+if __name__ == "__main__":
+    bpa = BasePageAction(1)
+    print(bpa.handleLikeCount(999))
+    print(bpa.handleLikeCount(123123))
+    print(bpa.handleLikeCount(2214523))

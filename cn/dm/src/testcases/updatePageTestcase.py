@@ -2,9 +2,16 @@
 
 
 from .baseTestcase import BaseTestcase
-import time
+
+
 
 class UpdatePageTestcase(BaseTestcase):
 
-    def test_update(self):
-        time.sleep(20)
+
+    def test001_checkEveryToday(self):
+        self.UPA.getInEveryday()
+
+
+    # def test002_scrollToday(self):
+    #     self.UPA.getInDefault()
+

@@ -24,7 +24,18 @@ class UpdatePage(BasePage):
     SUNDAY = (By.ACCESSIBILITY_ID,"周日")
     END = (By.ACCESSIBILITY_ID,"完结")
 
+    CELLSTABLE = (By.IOS_PREDICATE,'type == "XCUIElementTypeTable"')
+    BANNERCELL = (By.IOS_PREDICATE,'name BEGINSWITH "PopularBannerCell"')
+    NOTICEBANNERCELL = (By.IOS_PREDICATE,'name BEGINSWITH "PopularNoticeBannerCell"')
+    FAVOURITEBANNER = (By.IOS_PREDICATE,'name BEGINSWITH "FavoriteBannerCell"')
 
+    BANNERCELLTEXT = "PopularBannerCell"
+    NOTICEBANNERCELLTEXT = "PopularNoticeBannerCell"
+    FAVOURITEBANNERTEXT = "FavoriteBannerCell"
 
+    ALLEPISODE = (By.ACCESSIBILITY_ID,"全集")
+    ADDSUBSCRIBE =  (By.ACCESSIBILITY_ID,"关注")
+    CANCELSUBSCRIBE = (By.ACCESSIBILITY_ID,"已关注")
+    LIKEIT = (By.ACCESSIBILITY_ID,"赏我个赞吧！")
 
-
+    TODAY = (By.ACCESSIBILITY_ID,"今天")
