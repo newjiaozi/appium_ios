@@ -646,7 +646,7 @@ def likeIt(titleNo,episodeNo,like=True):
 
 
 
-neo_ses = login(Config("email"),Config("passwd"),Config('loginType'))
+neo_ses,neo_id = login(Config("email"),Config("passwd"),Config('loginType'))
 list2data = appTitleList2()
 genrelist = appGenrelist2(False)
 
@@ -683,7 +683,7 @@ if __name__=="__main__":
             for i in range(0,1):
                 code = v1Comment(title,episode,text=i)
                 if code == 10005:
-                    deleteRedis("3f92b1d0-0331-11e9-9c05-00163e06a3f6")
+                    deleteRedis(neo_id)
                 likecode = likeIt(title,episode)
                 if likecode == 10010:
                     likeIt(title, episode,like=False)

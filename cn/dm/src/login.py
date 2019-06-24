@@ -48,4 +48,5 @@ def login(username,passwd,loginType="EMAIL"): ##PHONE_NUMBER
     plus = {"loginType":loginType,"encnm":encnm,"encpw":encpw,"v":1}
     plus.update(Config("baseparams"))
     resp = requests.post(Config("httphost")+path,headers=Config("headers"),data=plus,params= getExpiresMd5(path))
-    return resp.json()["message"]["result"]["ses"]
+    resp_json = resp.json()
+    return resp_json["message"]["result"]["ses"],resp_json["message"]["result"]["idNo"]
