@@ -3,20 +3,22 @@
 import requests
 import base64,hashlib
 import time,datetime
-from cn.dm.src.config import Config
 import os
 import json
 import multiprocessing
 import threading
 import faker
-from cn.dm.src.login import login
 import pymysql
 import redis
+from cn.dm.src.logger import logger
+from cn.dm.src.login import Config,getUUID
+
 
 
 oslinesep = os.linesep
 fake = faker.Faker()
 
+## 生成expires和md5
 def getExpiresMd5(pathstr,skey="the_scret_key"):
     now30 = datetime.datetime.now() + datetime.timedelta(minutes=30)
     utime = str(int(time.mktime(now30.timetuple())))
@@ -29,7 +31,9 @@ def getExpiresMd5(pathstr,skey="the_scret_key"):
     msg_md5_base64_str = msg_md5_base64_str.replace("=", "")
     return {"md5":msg_md5_base64_str,"expires":utime}
 
+##更新页数据
 def appHomeCard2(weekday):
+    # logger.info("appHomeCard2")
     path ="/app/home/card2"
     payload = {"weekday":weekday,"v":3}
     payload.update(Config("baseparams"))
@@ -44,7 +48,7 @@ def appHomeCard2(weekday):
         resulttmp = resp_json["message"]["result"]
         # print(resulttmp)
         if weekday == "COMPLETE":
-            resulttmp["titleAndEpisodeList"].sort(key=lambda x: x["titleNo"], reverse=True)
+            resulttmp["titleAndEpisodeList"].sort(key=lambda x: (x["mana"],x["titleNo"]), reverse=True)
             result["title"] = resulttmp["titleAndEpisodeList"]
 
         else:
@@ -53,14 +57,19 @@ def appHomeCard2(weekday):
             resulttmp["noticeCard"].sort(key=lambda x:int(x["exposurePosition"]))
             result["banner"] = resulttmp["noticeCard"]
         telist = []
+        genrelist = appGenrelist2(False)
         for i in result["title"]:
             rg = i["representGenre"]
-            i["representGenre"]= genrelist[rg]
+            i["representGenreCN"]= genrelist[rg]
             telist.append("%s-%s" % (i["titleNo"], i["episodeNo"]))
         result["titleEpisodeNos"] = telist
+        logger.info(resp.url)
         return result
     else:
-        print(resp.text)
+        logger.info(resp.url)
+        logger.info(resp.text)
+
+
 
 def appHome3(weekday):
     path ="/app/home3"
@@ -99,6 +108,95 @@ def appHome3(weekday):
         return result
     else:
         print(resp.text)
+
+def appHome4(weekday="MONDAY"):
+    path ="/app/home4"
+    payload = {"weekday":weekday,"v":1}
+    payload.update(Config("baseparams"))
+    payload.update(getExpiresMd5(path))
+
+    resp = requests.get(Config("httphost")+path,params=payload,headers=Config("headers"),cookies=Config("cookies"))
+    try:
+        if resp.ok:
+            result = {}
+            resp_json = resp.json()
+            logger.info(resp.url)
+            ####处理发现页bigbanner
+            resulttmp = resp_json["message"]["result"]
+            topBanner = resulttmp["topBanner"]["bannerList"]
+            # topBanner.sort(key=lambda x:x["bannerSeq"],reverse=True)
+            result["bigbanner"] = topBanner
+            ###咚漫推荐
+            result["dongman"] = resulttmp["dongmanRecommendContentList"]
+            ##barbanner
+            result["barbanner"] = resulttmp["bannerPlacementList"]
+            ##分类
+            result["genre"] = resulttmp["genres"]
+            ##主题
+            result["theme"] = resulttmp["webtoon_collection_list"]
+            ##排行榜，上升榜，新作榜，总榜
+            result["uprank"] = resulttmp["ranking"]["titleWeeklyRanking"]
+            result["newrank"] = resulttmp["ranking"]["titleNewRanking"]
+            result["totalrank"] = resulttmp["ranking"]["titleTotalRanking"]
+            ##新作登场
+            result["new"] = resulttmp["homeNew"]
+            ##佳作抢先看
+            result["lead"] = resulttmp["leadUpLookList"]
+            ##猜你喜欢
+            result["like"] = resulttmp["recommend_map_list"]
+            return result
+        else:
+            logger.error(resp.url)
+            logger.error(resp.text)
+            return False
+
+    except Exception:
+        logger.error(resp.url)
+        logger.error(resp.text)
+        return False
+
+
+
+def appHome4Priority(weekday="MONDAY"):
+    path ="/app/home4"
+    payload = {"weekday":weekday,"v":1,"homeDetailDataStatus":"LEAD_UP_DATA"}
+    payload.update(Config("baseparams"))
+    payload.update(getExpiresMd5(path))
+
+    resp = requests.get(Config("httphost")+path,params=payload,headers=Config("headers"))
+    if resp.ok:
+        logger.info(resp.url)
+        resp_json = resp.json()
+        # print(resp_json)
+        ####处理发现页bigbanner
+        resulttmp = resp_json["message"]["result"]
+        ###咚漫推荐
+        return resulttmp["leadUpLookList"]
+    else:
+        logger.error(resp.url)
+        logger.error(resp.text)
+
+def appHome4DM(weekday="MONDAY"):
+    path ="/app/home4"
+    payload = {"weekday":weekday,"v":1,"homeDetailDataStatus":"RECOMMEND_DATA"}
+    payload.update(Config("baseparams"))
+    payload.update(getExpiresMd5(path))
+
+    resp = requests.get(Config("httphost")+path,params=payload,headers=Config("headers"))
+    if resp.ok:
+        resp_json = resp.json()
+        # print(resp_json)
+        ####处理发现页bigbanner
+        resulttmp = resp_json["message"]["result"]
+        ###咚漫推荐
+        return resulttmp["dongmanRecommendContentList"]
+    else:
+        print(resp.text)
+
+
+
+
+
 
 ### 发现页的，
 # [{
@@ -144,28 +242,27 @@ def appHome3(weekday):
 # titleForSeo: "qa-13"
 # }]
 
-def appTitleList2(all=True):
+def appTitleList2():
     path ="/app/title/list2"
     payload = {"v":1}
     payload.update(Config("baseparams"))
     payload.update(getExpiresMd5(path))
     resp = requests.get(Config("httphost")+path,params=payload,headers=Config("headers"))
     if resp.ok:
-        result = []
+        result_dict = {}
         resp_json = resp.json()
-        # print(resp_json)
-        resulttmp = resp_json["message"]["result"]
-        tmp= resulttmp["titleList"]["titles"]
-        if all:
-            return tmp
-        else:
-            result = list(filter(lambda x:x["newTitle"],tmp))
-            genredict = appGenrelist2(False)
+        result = resp_json["message"]["result"]["titleList"]["titles"]
+        genredict = appGenrelist2(False)
         for i in result:
-            i["representGenre"]=genredict[i["representGenre"]]
-        return result
+            i["representGenrezh"]=genredict[i["representGenre"]]
+            result_dict[i["titleNo"]] = i
+        logger.info(resp.url)
+        # logger.info(result_dict)
+        return result_dict
     else:
-        print(resp.text)
+        logger.info(resp.url)
+        logger.info(resp.text)
+
 
 ### 发现页的，排行
 def appTitleRanking():
@@ -206,23 +303,25 @@ def appGenrelist2(all=True):
     payload = {"v":2}
     payload.update(Config("baseparams"))
     payload.update(getExpiresMd5(path))
-    resp = requests.get(Config("httphost")+path,params=payload,headers=Config("headers"))
+    resp = requests.get(Config("httphost")+path,params=payload,headers=Config("headers"),cookies=Config("cookies"))
     if resp.ok:
         resp_json = resp.json()
         tmp = resp_json["message"]["result"]["genreList"]["genres"]
         if all:
+            logger.info(resp.url)
+            # logger.info(tmp)
             return tmp
         else:
             dict1={}
             for i in tmp:
                 dict1[i["code"]]=i["name"]
-            # result["genre"] = dict1
+            logger.info(resp.url)
+            # logger.info(dict1)
             return dict1
     else:
-        print(resp.text)
-
-
-
+        logger.error(resp.url)
+        logger.error(resp.text)
+        return False
 
 
 ###返回三个titleName
@@ -236,33 +335,39 @@ def everyOneWatching(titleNoList=""):
     payload.update(Config("baseparams"))
     payload.update(getExpiresMd5(path))
     resp = requests.get(Config("httphost")+path,params=payload,headers=Config("headers"))
-    ranklist = resp.json()["message"]["result"]["ranklist"]
-    titles = {}
-    for i in ranklist:
-        # titleName = i["webtoon"]["title"]
-        # if titleName not in titles:
-        titles[i["webtoon"]["title"]] = i["webtoon"]["titleNo"]
-    return titles
+    if resp.ok:
+        logger.info(resp.url)
+        ranklist = resp.json()["message"]["result"]["rankList"]
+        return ranklist
+    else:
+        logger.error(resp.url)
+        logger.error(resp.text)
+        return False
 
-def favouriteTitle():
+def appFavouriteTotalList2():
     path="/app/favorite/totalList2"
     payload= {"v":3}
     payload.update(Config("baseparams"))
     payload.update(getExpiresMd5(path))
-    resp = requests.get(Config("httphost")+path,params=payload,headers=Config("headers"))
-    titles = resp.json()["message"]["result"]["titlelist"]["titles"]
-    titleName = []
-    for i in titles:
-        titleName.append(i["title"])
-    return titleName
+    resp = requests.get(Config("httphost")+path,params=payload,headers=Config("headers"),cookies=Config("cookies"))
+    if resp.ok:
+        logger.info(resp.url)
+        titles = resp.json()["message"]["result"]["titlelist"]["titles"]
+        # titleName = []
+        # for i in titles:
+        #     titleName.append(i["title"])
+        return titles
+    else:
+        logger.error(resp.url)
+        logger.error(resp.text)
+        return False
 
 def v1CommentOwnAll():
     path="/v1/comment/ownall"
     payload= {"limit":20,"pageNo":1,"flag":None,"_id":None}
     payload.update(Config("baseparams"))
     payload.update(getExpiresMd5(path))
-    cookies={"NEO_SES":neo_ses}
-    resp = requests.get(Config("httphost")+path,params=payload,headers=Config("headers"),cookies=cookies)
+    resp = requests.get(Config("httphost")+path,params=payload,headers=Config("headers"),cookies=Config("cookies"))
     commentObjectId=[]
     commentList= resp.json()["data"]["commentList"]
     for comment in commentList:
@@ -273,6 +378,39 @@ def v1CommentOwnAll():
     for comment in commentList:
         result.append(commentList["contents"])
     return result
+
+
+def v1CommentOwnAllOnlyIds():
+    path="/v1/comment/ownall"
+    payload= {"limit":20,"pageNo":1,"flag":None,"_id":None}
+    payload.update(Config("baseparams"))
+    payload.update(getExpiresMd5(path))
+    try:
+        resp = requests.get(Config("httphost")+path,params=payload,headers=Config("headers"),cookies=Config("cookies"))
+        commentList= resp.json()["data"]["commentList"]
+        commentIds = list(map(lambda x:x["_id"],commentList))
+        logger.info(resp.url)
+        return commentIds
+    except Exception:
+        logger.error(resp.url)
+        logger.error(resp.text)
+        return False
+
+
+
+
+def deleteComment(id):
+    path = "/v1/comment/%s" % id
+    payload  = getExpiresMd5(path)
+    resp = requests.delete(Config("httphost")+path,params=payload,headers=Config("headers"),cookies=Config("cookies"))
+    if resp.ok:
+        logger.info(resp.url)
+        if resp.json()['code'] == 200:
+            return True
+    logger.error(resp.url)
+    logger.error(resp.text)
+
+
 
 
 def getGenreData(genre="all",status="all",sortby="人气"):
@@ -311,6 +449,7 @@ def getGenreData(genre="all",status="all",sortby="人气"):
                     print("ALL、ALL、人气:%s个" % len(titles))
                     for i in titles:
                         print(i['title'],i["subGenre"],i['restTerminationStatus'],i["mana"],i["titleNo"],"%s" % oslinesep)
+
                 elif sortby == "最新":
                     titles.sort(key=lambda x:(x["lastEpisodeRegisterYmdt"],x["titleNo"]),reverse=True)
                     print("ALL、ALL、最新:%s个" % len(titles))
@@ -415,7 +554,6 @@ def getGenreData(genre="all",status="all",sortby="人气"):
                         print(i['title'],i["subGenre"],i['restTerminationStatus'],i["mana"],i["titleNo"],"%s" % oslinesep)
 
 
-
 def appCommentTitleepisodeinfo2(telist):
     path="/app/comment/titleEpisodeInfo2"
     telist2Json = json.dumps(telist)
@@ -424,9 +562,6 @@ def appCommentTitleepisodeinfo2(telist):
     resp = requests.post(Config("httphost")+path,params=getExpiresMd5(path),data=payload,headers=Config("headers"))
     commentTitleEpisodeInfo = resp.json()["message"]["result"]["commentTitleEpisodeInfo"]
     return commentTitleEpisodeInfo
-
-
-
 
 
 def appTitleList2oo(args):
@@ -459,7 +594,6 @@ def multiProcess(target,pcount=10000,callback=callBack):
     print("TPS: %.2f/s" % (pcount/(end-start).total_seconds()) )
 
 
-
 def multiThread(target,pcount=1000):
     thread_list =[]
     for i in range(0,pcount):
@@ -476,72 +610,88 @@ def multiThread(target,pcount=1000):
     print("multiprocessing end:%s " % end.strftime("%Y-%m-%d %H:%M:%S"))
     print("TPS: %.2f/s" % (pcount/(end-start).total_seconds()) )
 
-
+## 获取人气页关注列表
 def appMyFavorite2():
     path ="/app/myFavorite2"
     payload = {"v":3,"sortOrder":"UPDATE"}
     payload.update(Config("baseparams"))
     payload.update(getExpiresMd5(path))
-    cookies={"NEO_SES":neo_ses}
     try:
-        resp = requests.get(Config("httphost")+path,params=payload,headers=Config("headers"),cookies=cookies)
-        titleEpisodeList = resp["message"]["result"]["titleAndEpisodeList"]
-        telist=[]
+        resp = requests.get(Config("httphost")+path,params=payload,headers=Config("headers"),cookies=Config("cookies"))
+        logger.info(resp.url)
+        titleEpisodeList = resp.json()["message"]["result"]["titleAndEpisodeList"]
+        # telist=[]
+        # for i in titleEpisodeList:
+        #     telist.append("%s-%s" % (i["titleNo"],i["episodeNo"]))
+        genrelist = appGenrelist2(False)
         for i in titleEpisodeList:
-            telist.append("%s-%s" % (i["titleNo"],i["episodeNo"]))
-        return telist,titleEpisodeList
+            rg = i["representGenre"]
+            i["representGenreCN"]= genrelist[rg]
+        return titleEpisodeList
 
-    except Exception as e:
-        print(e.args)
+    except Exception:
+        logger.error(resp.url)
+        logger.error(resp.text)
+        return False
 
+## 获取章节点赞数
 def v1TitleLikeAndCount(titleEpisodeNos):
     path ="/v1/title/likeAndCount"
-    payload = {"titleEpisodeNos":titleEpisodeNos}
+    payload = {"titleEpisodeNos":",".join(map(lambda x:str(x),titleEpisodeNos))}
     payload.update(Config("baseparams"))
     payload.update(getExpiresMd5(path))
-    cookies={"NEO_SES":neo_ses}
     try:
-        resp = requests.get(Config("httphost")+path,params=payload,headers=Config("headers"),cookies=cookies)
-        data = resp["data"]
+        resp = requests.get(Config("httphost")+path,params=payload,headers=Config("headers"),cookies=Config("cookies"))
+        data = resp.json()["data"]
+        logger.info(resp.url)
         return data
 
-    except Exception as e:
-        print(e.args)
+    except Exception:
+        logger.info(resp.url)
+        logger.info(resp.text)
+        return False
 
+
+
+##获取关注列表
 def appFavouriteTotalList2():
     path="/app/favorite/totalList2"
     payload = {"v":3}
     payload.update(Config("baseparams"))
     payload.update(getExpiresMd5(path))
-    cookies={"NEO_SES":neo_ses}
     try:
-        resp = requests.get(Config("httphost")+path,params=payload,headers=Config("headers"),cookies=cookies)
-        return resp["data"][0]["like"],resp["data"][0]["count"]
-    except Exception as e:
-        print(e.args)
+        resp = requests.get(Config("httphost")+path,params=payload,headers=Config("headers"),cookies=Config("cookies"))
+        logger.info(resp.url)
+        return resp.json()["message"]["result"]["titleList"]["titles"]
+    except Exception:
+        logger.error(resp.url)
+        logger.error(resp.text)
+        return False
 
 
-
+## 获取热词
 def appGetHotWordNew():
     path = "/app/getHotWordNew"
     payload = {}
     payload.update(Config("baseparams"))
     payload.update(getExpiresMd5(path))
-    cookies={"NEO_SES":neo_ses}
     try:
-        resp = requests.get(Config("httphost")+path,params=payload,headers=Config("headers"),cookies=cookies)
-        return resp["message"]["result"]["getHotWordNew"]
-    except Exception as e:
-        print(e.args)
+        resp = requests.get(Config("httphost")+path,params=payload,headers=Config("headers"))
+        logger.info(resp.url)
+        return resp.json()["message"]["result"]["hotWordList"]
+    except Exception:
+        logger.error(resp.url)
+        logger.error(resp.text)
+        return False
 
-
-
+### 发表评论
 def v1Comment(titleNo,episodeNo,text=""):
     path = "/v1/comment"
     titleNo = str(titleNo)
     episodeNo = str(episodeNo)
     text = str(text)
     objectId = "w_"+titleNo+"_"+episodeNo
+    print(objectId)
     time_now = datetime.datetime.now()
     otherStyleTime = time_now.strftime("%Y-%m-%d %H:%M:%S")
     contents = text+"自动生成评论"+str(otherStyleTime)
@@ -553,9 +703,8 @@ def v1Comment(titleNo,episodeNo,text=""):
                "objectId":objectId,
                "titleNo":titleNo}
     payload.update(Config("baseparams"))
-    cookies={"NEO_SES":neo_ses}
     try:
-        resp = requests.post(Config("httphost")+path,params=getExpiresMd5(path),data=payload,headers=Config("headers"),cookies=cookies)
+        resp = requests.post(Config("httphost")+path,params=getExpiresMd5(path),data=payload,headers=Config("headers"),cookies=Config("cookies"))
         print(resp.text)
         return resp.json()["code"]
     except Exception as e:
@@ -570,7 +719,10 @@ def initDataFromDB():
 
 def getTitleFromMysql(platform,cursor):
     ## 获取所有title
-    querySql = 'select title.title_no as tn,title.display_platform as dp from  title where title.language_code="SIMPLIFIED_CHINESE" and title.service_status_code = "SERVICE";'
+    querySql = 'select title.title_no as tn,title.display_platform as dp from  title ' \
+               'where title.language_code="SIMPLIFIED_CHINESE" ' \
+               'and title.service_status_code = "SERVICE" ' \
+               'order by title.title_no;'
     cursor.execute(querySql)
     title_platforms = cursor.fetchall()
     titles = []
@@ -585,7 +737,8 @@ def getTitleFromMysql(platform,cursor):
 def getEpisodeFromMysql(cursor,title):
     # print(title)
     ## 获取所有episode
-    querySql = 'select episode_no from episode where service_status_code = "SERVICE" and title_no = %s'
+    querySql = 'select episode_no from episode ' \
+               'where service_status_code = "SERVICE" and title_no = %s'
     cursor.execute(querySql % title)
     episodes = cursor.fetchall()
     # print(episodes)
@@ -622,35 +775,471 @@ def deleteRedis(neo_id):
     else:
         print("没有匹配到需要删除的redis")
 
-
+### 点赞章节
 def likeIt(titleNo,episodeNo,like=True):
     "https://qaapis02.dongmanmanhua.cn/v1/title/1288/episode/1/like?md5=hjORhXHriOgH0t2U3x6lXg&expires=1561087385855"
     path = "/v1/title/%s/episode/%s/like" % (titleNo,episodeNo)
     if like:
         flag = "like"
     else:
-        print("取消点赞%s-%s" % (titleNo,episode))
+        print("取消点赞%s-%s" % (titleNo,episodeNo))
         flag = "cancelLike"
     # titleNo = str(titleNo)
     # episodeNo = str(episodeNo)
 
     payload = {"flag":flag}
     payload.update(Config("baseparams"))
-    cookies={"NEO_SES":neo_ses}
     try:
-        resp = requests.post(Config("httphost")+path,params=getExpiresMd5(path),data=payload,headers=Config("headers"),cookies=cookies)
-        print(resp.text)
+        resp = requests.post(Config("httphost")+path,params=getExpiresMd5(path),data=payload,headers=Config("headers"),cookies=Config("cookies"))
+        logger.info(resp.text)
         return resp.json()["code"]
     except Exception as e:
         print(e.args)
 
 
+def v1CommentOwnAll4XingNeng(flag="",id="",pageNo=1,limit =30):
+    path="/v1/comment/ownall"
+    payload= {"limit":limit,"pageNo":pageNo,"flag":flag,"_id":id}
+    payload.update(Config("baseparams"))
+    payload.update(getExpiresMd5(path))
+    resp = requests.get(Config("httphost")+path,params=payload,headers=Config("headers"),cookies=Config("cookies"))
+    resp_json = resp.json()
+    if resp_json["code"] == 200:
+        print(resp_json)
+        flag = "next"
+        id = resp_json["data"]["commentList"][-1]["_id"]
+        pageNo+=1
+        return flag,id,pageNo
+    else:
+        print(resp.text)
 
-neo_ses,neo_id = login(Config("email"),Config("passwd"),Config('loginType'))
-list2data = appTitleList2()
-genrelist = appGenrelist2(False)
+### 发表回复
+def v1CommentReply(titleNo,episodeNo,text=""):
+    path = "/v1/comment_reply"
+    titleNo = str(titleNo)
+    episodeNo = str(episodeNo)
+    text = str(text)
+    objectId = "w_"+titleNo+"_"+episodeNo
+    print(objectId)
+    time_now = datetime.datetime.now()
+    otherStyleTime = time_now.strftime("%Y-%m-%d %H:%M:%S")
+    contents = text+"自动生成回复"+str(otherStyleTime)
+    payload = {
+               "contents":contents,
+               "parentId":"5d230dc735c6c96b2dc0d2ba",
+               "objectId":objectId}
+    payload.update(Config("baseparams"))
+    try:
+        resp = requests.post(Config("httphost")+path,params=getExpiresMd5(path),data=payload,headers=Config("headers"),cookies=Config("cookies"))
+        logger.info(resp.text)
+        return resp.json()["code"]
+    except Exception as e:
+        print(e.args)
+
+##获取自定义菜单
+def appHomeMenus():
+    path = '/app/home/menus'
+    payload = {}
+    payload.update(Config("baseparams"))
+    payload.update(getExpiresMd5(path))
+    try:
+        resp = requests.get(Config("httphost") + path, params=payload, headers=Config("headers"))
+        return resp.json()["message"]["result"]["menuList"]
+    except Exception as e:
+        print(e.args)
+
+
+def appHomeMenuDetail(menuId):
+    path='/app/home/menu/detail'
+    payload = {"menuId":menuId}
+    payload.update(Config("baseparams"))
+    payload.update(getExpiresMd5(path))
+    try:
+        resp = requests.get(Config("httphost") + path, params=payload, headers=Config("headers"))
+        return resp.json()["message"]["result"]
+    except Exception as e:
+        print(e.args)
+
+
+def appHomeMenuModuleMore(menuId,moduleId):
+    path='/app/home/menu/module/more'
+    payload = {"menuId":menuId,"moduleId":moduleId}
+    payload.update(Config("baseparams"))
+    payload.update(getExpiresMd5(path))
+    try:
+        resp = requests.get(Config("httphost") + path, params=payload, headers=Config("headers"))
+        result = resp.json()["message"]["result"]
+        logger.info(resp.url)
+        logger.info(result)
+        return result
+    except Exception:
+        logger.info(resp.url)
+        logger.info(resp.text)
+        return False
+
+
+
+def appEpisodeInfoV3(titleNo,episodeNo,purchase=0,v=10):
+    path='/app/episode/info/v3'
+    payload = {"titleNo":titleNo,"episodeNo":episodeNo,"purchase":purchase,"v":v}
+    payload.update(Config("baseparams"))
+    payload.update(getExpiresMd5(path))
+    try:
+        resp = requests.get(Config("httphost") + path, params=payload, headers=Config("headers"))
+        result = resp.json()["message"]["result"]["episodeInfo"]
+        logger.info(resp.url)
+        # logger.info(result)
+        return result
+    except Exception:
+        logger.info(resp.url)
+        logger.info(resp.text)
+        logger.exception("执行appEpisodeInfoV3异常")
+
+
+
+def v1TitleEpisodeLikeCount(titleNo,episodeNos):
+    path='/v1/title/%s/episode/likeAndCount' % titleNo
+    payload = {"episodeNos":",".join(map(lambda x:str(x),episodeNos))}
+    payload.update(Config("baseparams"))
+    payload.update(getExpiresMd5(path))
+    try:
+        resp = requests.get(Config("httphost") + path, params=payload, headers=Config("headers"),cookies=Config("cookies"))
+        result = resp.json()["data"]
+        logger.info(resp.url)
+        logger.info("v1TitleEpisodeLikeCount:%s" % resp.text)
+        return result
+    except Exception as e:
+        logger.info(resp.url)
+        logger.exception("v1TitleEpisodeLikeCount执行出异常")
+
+
+def appTitleInfo2(titleNo):
+    path='/app/title/info2'
+    payload = {"titleNo":titleNo}
+    payload.update(Config("baseparams"))
+    payload.update(getExpiresMd5(path))
+    try:
+        resp = requests.get(Config("httphost") + path, params=payload, headers=Config("headers"))
+        result = resp.json()["message"]["result"]["titleInfo"]
+        logger.info(resp.url)
+        # logger.info(result)
+        return result
+    except Exception as e:
+        logger.info(resp.url)
+        logger.info(resp.text)
+        logger.exception("appTitleInfo2执行异常")
+
+def appTitleRecommend2(titleNo):
+    path='/app/title/recommend2'
+    payload = {"titleNo":titleNo}
+    payload.update(Config("baseparams"))
+    payload.update(getExpiresMd5(path))
+    try:
+        resp = requests.get(Config("httphost") + path, params=payload, headers=Config("headers"),cookies=Config("cookies"))
+        return resp.json()["message"]["result"]["recommend"]
+    except Exception as e:
+        print(e.args)
+
+def appHomeLeaduplook():
+    path = "/app/home/leadUpLook"
+    payload = Config("baseparams")
+    payload.update(getExpiresMd5(path))
+    try:
+        resp = requests.get(Config("httphost") + path, params=payload, headers=Config("headers"),cookies=Config("cookies"))
+        return resp.json()["message"]["result"]["leadUpLook"]
+    except Exception as e:
+        print(e.args)
+
+
+def appHomeRecommend2():
+    path='/app/home/recommend2'
+    payload = Config("baseparams")
+    payload.update(getExpiresMd5(path))
+    try:
+        resp = requests.get(Config("httphost") + path, params=payload, headers=Config("headers"),cookies=Config("cookies"))
+        return resp.json()["message"]["result"]["dongmanRecommendContentList"]
+    except Exception as e:
+        print(e.args)
+
+def appPPLInfo(titleNo,episodeNo,v=5):
+    path='/app/ppl/info'
+    payload = {"titleNo":titleNo,"episodeNo":episodeNo,"v":v}
+    payload.update(Config("baseparams"))
+    payload.update(getExpiresMd5(path))
+    try:
+        resp = requests.get(Config("httphost") + path, params=payload, headers=Config("headers"),cookies=Config("cookies"))
+        logger.info(resp.url)
+        return resp.json()["message"]["result"]
+    except Exception:
+        logger.error(resp.url)
+        logger.error(resp.text)
+        return False
+
+def appAuthorInfo2(titleNo):
+    path = "/app/author/info2"
+    payload = {"titleNo":titleNo}
+    payload.update(Config("baseparams"))
+    payload.update(getExpiresMd5(path))
+    try:
+        resp = requests.get(Config("httphost") + path, params=payload, headers=Config("headers"),cookies=Config("cookies"))
+        logger.info(resp.url)
+        return resp.json()["message"]["result"]["authorInfo"]
+    except Exception:
+        logger.error(resp.url)
+        logger.error(resp.text)
+        return False
+
+def appEpisodeListV3(titleNo):
+    path = "/app/episode/list/v3"
+    # if lastUpdate:
+    #     payload = {"titleNo":titleNo,"v":v,"startIndex":0}
+    # else:
+    #     payload = {"titleNo":titleNo,"v":v,"startIndex":startIndex,"pageSize":pageSize}
+    payload = {"titleNo": titleNo, "v": 10}
+    payload.update(Config("baseparams"))
+    payload.update(getExpiresMd5(path))
+    try:
+        resp = requests.get(Config("httphost") + path, params=payload, headers=Config("headers"),cookies=Config("cookies"))
+        result = resp.json()["message"]["result"]["episodeList"]
+        logger.info(resp.url)
+        return result
+    except Exception:
+        logger.error(resp.url)
+        logger.error("执行appEpisodeListV3异常")
+        return False
+
+def appEpisodeListHide(titleNo):
+    path = "/app/episode/list/hide"
+    # if lastUpdate:
+    #     payload = {"titleNo":titleNo,"v":v,"startIndex":0}
+    # else:
+    #     payload = {"titleNo":titleNo,"v":v,"startIndex":startIndex,"pageSize":pageSize}
+    payload = {"titleNo": titleNo, "v": 7}
+    payload.update(Config("baseparams"))
+    payload.update(getExpiresMd5(path))
+    try:
+        resp = requests.get(Config("httphost") + path, params=payload, headers=Config("headers"),cookies=Config("cookies"))
+        return resp.json()["message"]["result"]["episodeList"]
+    except Exception as e:
+        print(e.args)
+
+
+
+
+def appMemeberInfoV2():
+    path = "/app/member/info/v2"
+    payload = {}
+    payload.update(Config("baseparams"))
+    payload.update(getExpiresMd5(path))
+    try:
+        resp = requests.get(Config("httphost") + path, params=payload, headers=Config("headers"),cookies=Config("cookies"))
+        return resp.json()["message"]["result"]["member"]
+    except Exception as e:
+        print(e.args)
+
+
+##0:12岁以下，1:13～15岁，2:16～18岁，3:19～22岁，4:23～25岁，5:26～35岁，6:36岁以上
+##
+def appUserpreferenceNewadd(ancientchinese,boy,campus,comedy,
+                            fantasy,filmadaptation,healing,
+                            inspirational,love,metropolis,suspense,termination,
+                            isNewUser,age,gender):
+    path = "/app/userPreference/newAdd"
+    if age:
+        if ancientchinese or boy or campus or comedy or fantasy or filmadaptation or healing or inspirational or love or metropolis or suspense or termination:
+            payload = {"age":age,
+                       "ancientChinese":ancientchinese,
+                       "boy":boy,
+                       "campus":campus,
+                       "comedy":comedy,
+                       "fantasy":fantasy,
+                       "filmAdaptation":filmadaptation,
+                       "gender":gender,
+                       "healing":healing,
+                       "inspirational":inspirational,
+                       "love":love,
+                       "metropolis":metropolis,
+                       "suspense":suspense,
+                       "termination":termination,
+                       "isNewUser":isNewUser,
+                       }
+        else:
+            payload = {"age":age,
+                       "gender": gender,
+                       "isNewUser":isNewUser,
+                       }
+    else:
+        if ancientchinese or boy or campus or comedy or fantasy or filmadaptation or healing or inspirational or love or metropolis or suspense or termination:
+            payload = {
+                       "ancientChinese":ancientchinese,
+                       "boy":boy,
+                       "campus":campus,
+                       "comedy":comedy,
+                       "fantasy":fantasy,
+                       "filmAdaptation":filmadaptation,
+                       "gender":gender,
+                       "healing":healing,
+                       "inspirational":inspirational,
+                       "love":love,
+                       "metropolis":metropolis,
+                       "suspense":suspense,
+                       "termination":termination,
+                       "isNewUser":isNewUser,
+                       }
+        else:
+            payload = {
+                        "gender": gender,
+                        "isNewUser":isNewUser,
+                       }
+    payload.update(Config("baseparams"))
+    payload.update(getExpiresMd5(path))
+    try:
+        # uuid = getUUID()
+        uuid = "00000086592F46A59D81777788889999"
+        # print(uuid)
+        resp = requests.get(Config("httphost")+path, params=payload,headers=Config("headers"),cookies={"uuid":uuid})
+        print(resp.url)
+        return resp.json()["message"]["result"]["recommendList"]
+    except Exception as e:
+        # print("#"*20)
+        print(e.args)
+
+
+
+def getImageFromCDN(imagePath):
+    host = "https://cdn.dongmanmanhua.cn"
+
+    headers = {
+               # ":method": "GET",
+               # ":scheme": "https",
+               # ":path": imagePath,
+               # ":authority":"cdn.dongmanmanhua.cn",
+               "accept": "image/*",
+               "referer": "https://qam.dongmanmanhua.cn/",
+               "user-agent": "dongman/2.2.0_qa_0826 (iPhone; iOS 12.3.1; Scale/3.00)",
+               "accept-language": "zh-cn",
+               "accept-encoding": "br, gzip, deflate",
+               }
+    resp = requests.get(host+imagePath,headers=headers,stream=True)
+    if resp.ok:
+        # print(resp.content)
+        a = base64.b64encode(resp.content)
+        # print(a.decode())
+        return a.decode()
+
+def convert_n_bytes(n, b):
+    bits = b * 8
+    return (n + 2 ** (bits - 1)) % 2 ** bits - 2 ** (bits - 1)
+
+def convert_4_bytes(n):
+    return convert_n_bytes(n, 4)
+
+def getHashCode(s):
+    h = 0
+    n = len(s)
+    for i, c in enumerate(s):
+        h = h + ord(c) * 31 ** (n - 1 - i)
+    return convert_4_bytes(h)
+
+def caculateWhichTable(uuid):
+    return abs(getHashCode(uuid)) % 50
+
+def transArgs(*args):
+
+    for i in args:
+        print(i)
+
+def appClientVersionLatest():
+    path = "/app/client/version/latest"
+    payload = Config("baseparams")
+    payload.update(getExpiresMd5(path))
+    try:
+        resp = requests.get(Config("httphost") + path, params=payload, headers=Config("headers"))
+        logger.info(resp.url)
+        return resp.json()["message"]["result"]["clientVersion"]
+    except Exception:
+        logger.error(resp.url)
+        logger.error(resp.text)
+        return False
+
+def appClientVersion():
+    path = "/app/client/version"
+    payload = Config("baseparams")
+    payload.update(getExpiresMd5(path))
+    try:
+        resp = requests.get(Config("httphost") + path, params=payload, headers=Config("headers"))
+        logger.info(resp.url)
+        return resp.json()["message"]["result"]["clientVersion"]
+    except Exception:
+        logger.error(resp.url)
+        logger.error(resp.text)
+        return False
+
+def appFavoriteAdd(titleNo):
+    path = "/app/favorite/add"
+    payload = Config("baseparams")
+    payload.update(getExpiresMd5(path))
+    payload.update({"titleNo":titleNo})
+    try:
+        resp = requests.get(Config("httphost") + path, params=payload, headers=Config("headers"),cookies=Config("cookies"))
+        logger.info(resp.url)
+        return resp.json()["message"]["result"]
+    except Exception:
+        logger.error(resp.url)
+        logger.error(resp.text)
+        return False
+
+
+def appFavoriteAdd(titleNo):
+    path = "/app/favorite/add"
+    payload = Config("baseparams")
+    payload.update(getExpiresMd5(path))
+    payload.update({"titleNo":titleNo})
+    try:
+        resp = requests.get(Config("httphost") + path, params=payload, headers=Config("headers"),cookies=Config("cookies"))
+        logger.info(resp.url)
+        return resp.json()["message"]["result"]
+    except Exception:
+        logger.error(resp.url)
+        logger.error(resp.text)
+        return False
+
+
+def appFavoriteTotalRemoveAll():
+    path = "/app/favorite/totalRemoveAll"
+    payload = Config("baseparams")
+    payload.update(getExpiresMd5(path))
+    try:
+        resp = requests.get(Config("httphost") + path, params=payload, headers=Config("headers"),cookies=Config("cookies"))
+        logger.info(resp.url)
+        return resp.json()["message"]["result"]
+    except Exception:
+        logger.error(resp.url)
+        logger.error(resp.text)
+        return False
+
+
+
+
+def testingConfigInfo(version="2.2.4"):
+    path = "/testing/configInfo"
+    payload = Config("baseparams")
+    payload.update(getExpiresMd5(path))
+    payload.update({"version":version})
+    try:
+        resp = requests.get("https://qaapis02.dongmanmanhua.cn" + path, params=payload, headers=Config("headers"),cookies={"uuid":getUUID()})
+        if resp.ok:
+            logger.info(resp.url)
+            result = resp.json()["message"]["result"]["data"]["oneKeyLogin"]
+            logger.info(result)
+            return result
+    except Exception:
+        logger.error(resp.url)
+        return False
+
 
 if __name__=="__main__":
+    pass
     # login("13683581996","1988oooo")
     # genreDict = {"恋爱":"LOVE",
     #              "少年":"BOY",
@@ -677,16 +1266,52 @@ if __name__=="__main__":
     # for i in res["title"]:
     #     print(i["title"],i["titleNo"],i["lastEpisodeRegisterYmdt"],i['mana'],i["updateKey"],i["likeitCount"])
 
-    title_episode = getAllTitleEpisode(11)
-    for title,episodes in title_episode.items():
-        for episode in episodes:
-            for i in range(0,1):
-                code = v1Comment(title,episode,text=i)
-                if code == 10005:
-                    deleteRedis(neo_id)
-                likecode = likeIt(title,episode)
-                if likecode == 10010:
-                    likeIt(title, episode,like=False)
-                    likeIt(title, episode)
 
 
+    # 请求评论，以及点赞
+    # title_episode = getAllTitleEpisode(11)
+    # for title,episodes in title_episode.items():
+    #     for episode in episodes:
+    #         for i in range(0,15):
+    #             code = v1Comment(title,episode,text=i)
+    #             if code == 10005:
+    #                 deleteRedis(neo_id)
+            # likecode = likeIt(title,episode)
+            # if likecode == 10010:
+            #     likeIt(title, episode,like=False)
+            #     likeIt(title, episode)
+
+
+    ## 查询自己的评论，一页一页查询
+    # result = v1CommentOwnAll4XingNeng()
+    # while result:
+    #     result = v1CommentOwnAll4XingNeng(*result)
+    # print("运行结束")
+    # for i in range(1,10000):
+    #     code = v1CommentReply(1249,1,str(i))
+    #     if code == 10005:
+    #         deleteRedis(neo_id)
+    #         v1CommentReply(1249, 1, str(i))
+
+    # createEpisode()
+    # print(appGetHotWordNew())
+
+    # getImageFromCDN("/1547800799069133217.jpg?x-oss-process=image/format,webp")
+    # print(appTitleInfo2(1428))
+    # print(caculateWhichTable("A0C62E3FFA854545B361FF1C28CC090C"))
+    # print(caculateWhichTable("D01F31657CAE4A119373FF78AB71FF0C"))
+    # print(caculateWhichTable("A0C62E3FFA854545B361FF1C28CC090C"))
+    # transArgs(1,23,4)
+    # transArgs(1,23,4,False)
+    # transArgs(1,23,4,True)
+    # transArgs(1)
+    # print(appClientVersion(),type(appClientVersion()))
+    # print(v1TitleEpisodeLikeCount(1268,[76,75,74,72,73]))
+    trueCount = 0
+    totalCount = 100
+    for i in range(0,totalCount):
+        res = testingConfigInfo("2.2.3")
+        if res:
+            trueCount+=1
+    print("执行%s次，返回true %s次" % (totalCount,trueCount))
+    # testingConfigInfo()

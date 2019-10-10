@@ -32,10 +32,14 @@ class UpdatePage(BasePage):
     BANNERCELLTEXT = "PopularBannerCell"
     NOTICEBANNERCELLTEXT = "PopularNoticeBannerCell"
     FAVOURITEBANNERTEXT = "FavoriteBannerCell"
+    FAVOURITECELL = [By.ACCESSIBILITY_ID,"FavoriteBannerCell%s"]
 
     ALLEPISODE = (By.ACCESSIBILITY_ID,"全集")
     ADDSUBSCRIBE =  (By.ACCESSIBILITY_ID,"关注")
-    CANCELSUBSCRIBE = (By.ACCESSIBILITY_ID,"已关注")
-    LIKEIT = (By.ACCESSIBILITY_ID,"赏我个赞吧！")
+    ALREADYSUBSCRIBE = (By.ACCESSIBILITY_ID,"已关注")
 
-    TODAY = (By.ACCESSIBILITY_ID,"今天")
+    HAVENOTSUBSCRIBE = (By.ACCESSIBILITY_ID,"没有关注的漫画。 添加到我的关注 新的章节更新时，会提醒您。")
+    NOLOGINTEXT = (By.ACCESSIBILITY_ID,"若想查看我的关注，请先登录。")
+    NOLOGINLOGIN = (By.ACCESSIBILITY_ID,"登录")
+
+

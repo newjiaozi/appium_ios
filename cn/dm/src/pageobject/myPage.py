@@ -64,7 +64,12 @@ class MyPage(BasePage):
     ##账号管理
     ACCOUNTTITLE = (By.ACCESSIBILITY_ID,"账号管理")
     ACCOUNTNICKNAMEMOBILE = (By.ACCESSIBILITY_ID,"手机账号")
-    ACCOUNTIDRE = (By.IOS_PREDICATE,"type == 'XCUIElementTypeStaticText' and value MATCHES '^咚漫ID: \d{7,8}$'")
+    ACCOUNTNICKNAMEEMAIL = (By.ACCESSIBILITY_ID,"邮箱账号")
+    ACCOUNTNICKNAMEWEIXIN = (By.ACCESSIBILITY_ID,"微信账号")
+    ACCOUNTNICKNAMEWEIBO = (By.ACCESSIBILITY_ID,"微博账号")
+    ACCOUNTNICKNAMEQQ = (By.ACCESSIBILITY_ID,"球球账号")
+
+    ACCOUNTID = (By.IOS_PREDICATE,"type == 'XCUIElementTypeStaticText' and name BEGINSWITH '咚漫ID'")
     ACCOUNTRESETPASS = (By.ACCESSIBILITY_ID,"密码重置")
     ACCOUNTEMAILNULL = (By.ACCESSIBILITY_ID,"认证邮箱，接收作品最新信息")
     ACCOUNTMOBILENULL = (By.ACCESSIBILITY_ID,"认证手机，接收作品最新信息")
@@ -92,9 +97,37 @@ class MyPage(BasePage):
     CHANGEMOBILESENDCODE = (By.ACCESSIBILITY_ID,"发送验证码")
     BACK = (By.ACCESSIBILITY_ID,"recommend back btn") ##返回
 
-    ##快捷登录
+    ##快捷登录 返回都是btnBack
+    QUICKCLOSE = (By.ACCESSIBILITY_ID,"invalidLogin") ## 右上角的X
     QUICKLOGIN = (By.IOS_PREDICATE,"type == 'XCUIElementTypeButton' and name == '快捷登录'")
     OTHERLOGIN = (By.IOS_PREDICATE,"type=='XCUIElementTypeStaticText' and value =='其他方式登录'")
+    QUICKUSERPREFERENCE = (By.IOS_PREDICATE,"type == 'XCUIElementTypeLink' and name == '用户服务协议'")
+    QUICKUSERYINSI = (By.IOS_PREDICATE,"type == 'XCUIElementTypeLink' and name == '隐私政策'")
+    QUICKCOMPANY = (By.ACCESSIBILITY_ID,"© Dongman Entertainment Corp.")
+    ##手机
+    QUICKMOBILETITLE = (By.ACCESSIBILITY_ID,"最近使用手机号登录")
+    QUICKMOBILEICON = (By.ACCESSIBILITY_ID,"fastLoginPhone") ## 不可见,手机的小图标
+    QUICKMOBILEACCOUNT = (By.ACCESSIBILITY_ID,"136****1996")
+    QUICKMOBILEPASSWD = (By.IOS_PREDICATE,"type == 'XCUIElementTypeSecureTextField' and value == '请输入密码'")
+    QUICKMOBILEPASSWDTITLE = (By.ACCESSIBILITY_ID,"登录手机账号1368****996")
+    ##邮箱
+    QUICKEMAILTITLE = (By.ACCESSIBILITY_ID,"最近使用邮箱登录")
+    QUICKEMAILICON = (By.ACCESSIBILITY_ID,"fastLoginMail") ## 不可见,小图标
+    QUICKEMAILACCOUNT = (By.ACCESSIBILITY_ID,"84978****@qq.com")
+    QUICKEMAILPASSWD = (By.IOS_PREDICATE,"type == 'XCUIElementTypeSecureTextField' and value == '请输入密码'")
+    QUICKEMAILPASSWDTITLE = (By.ACCESSIBILITY_ID,"登录邮箱账号84978****@qq.com")
+    ##微博
+    QUICKWEIBOTITLE = (By.ACCESSIBILITY_ID,"最近使用微博登录")
+    QUICKWEIBOICON = (By.ACCESSIBILITY_ID,"fastLoginWeibo") ## 不可见,小图标
+    QUICKWEIBOACCOUNT = (By.ACCESSIBILITY_ID,"微博账号")
+    ##微信
+    QUICKWECHATTITLE = (By.ACCESSIBILITY_ID,"最近使用微信登录")
+    QUICKWECHATICON = (By.ACCESSIBILITY_ID,"fastLoginWechat") ## 不可见,小图标
+    QUICKWECHATACCOUNT = (By.ACCESSIBILITY_ID,"微信账号")
+    ##QQ
+    QUICKQQTITLE = (By.ACCESSIBILITY_ID,"最近使用QQ登录")
+    QUICKQQICON = (By.ACCESSIBILITY_ID,"fastLoginQq") ## 不可见,小图标
+    QUICKQQACCOUNT = (By.ACCESSIBILITY_ID,"球球账号")
 
     ##充值：
     PURCHASEHISTORY = (By.ACCESSIBILITY_ID,"消费记录")
