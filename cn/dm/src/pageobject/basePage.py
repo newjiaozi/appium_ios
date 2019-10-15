@@ -111,7 +111,7 @@ class BasePage():
     DOWNLOADSTART = (By.ACCESSIBILITY_ID,"下载")
     DOWNLOADPICKERWHEEL= (By.CLASS_NAME,"XCUIElementTypePickerWheel")
     DOWNLOADPICKERWHEELFROM  = (By.XPATH,'//XCUIElementTypeApplication[@name="咚漫"]/XCUIElementTypeWindow[1]/XCUIElementTypeOther/XCUIElementTypeOther/XCUIElementTypeOther[3]/XCUIElementTypePicker[1]/XCUIElementTypePickerWheel')
-    DOWNLOADPICKERWHEELTO  = (By.XPATH,'//XCUIElementTypeApplication[@name="咚漫"]/XCUIElementTypeWindow[1]/XCUIElementTypeOther/XCUIElementTypeOther/XCUIElementTypeOther[3]/XCUIElementTypePicker[2]/XCUIElementTypePickerWheel')
+    DOWNLOADPICKERWHEELTO  = (By.XPATH,'//XCUIElementTypePicker[2]/XCUIElementTypePickerWheel')
     DOWNLOAD100 = (By.IOS_PREDICATE,'type== "XCUIElementTypeStaticText" and name ENDSWITH "%"')
 
 
@@ -149,7 +149,9 @@ class BasePage():
     ENDS = [By.IOS_PREDICATE,'name ENDSWITH "%s"']
     STARTS = [By.IOS_PREDICATE, 'name STARTSWITH "%s"']
     IDTOBE = [By.ACCESSIBILITY_ID,"%s"]
+    PREDICATESTATICTEXTNAMEEQUAL = [By.IOS_PREDICATE,'type == "XCUIElementTypeStaticText" and name == "%s"']
     BYIMAGE = [By.IMAGE,"%s"]
+
 
     # ADDALARM = (By.ACCESSIBILITY_ID,"添加小咚提醒")
     ADDALARM = (By.IOS_PREDICATE,'type == "XCUIElementTypeStaticText" and value ENDSWITH "凌晨更新,记得来追"')
@@ -189,6 +191,11 @@ class BasePage():
     GENREPAGEGENRESELECTFIRST = [By.XPATH,'//XCUIElementTypeOther[@name="topGenreMenu"]/XCUIElementTypeScrollView/XCUIElementTypeButton[@name="%s"]']
     GENREPAGEGENRESELECTSECOND = [By.XPATH,'//XCUIElementTypeCell[@name="bottomGenreView"]/XCUIElementTypeOther/XCUIElementTypeOther[1]/XCUIElementTypeScrollView/XCUIElementTypeButton[@name="%s"]']
     GENREPAGEGENRESELECTTHIRD = [By.XPATH,'//XCUIElementTypeCell[@name="bottomGenreView"]/XCUIElementTypeOther/XCUIElementTypeOther[2]/XCUIElementTypeScrollView/XCUIElementTypeButton[@name="%s"]']
+
+    GENREPAGEGENRESELECTFIRST = (By.ACCESSIBILITY_ID,"topGenreMenu")
+    GENREPAGEGENRESELECTSECOND = (By.ACCESSIBILITY_ID,"bottomGenreView")
+
+
     GENREPAGEGENRESELECTRENQI = (By.ACCESSIBILITY_ID,"人气")
     GENREPAGEGENRESELECTZUIXIN = (By.ACCESSIBILITY_ID,"最新")
 
@@ -311,11 +318,17 @@ class BasePage():
 
     ## 密码登录页面
     TOCODELOGIN = (By.ACCESSIBILITY_ID,"验证码登录")
-    INPUTUSER = (By.IOS_PREDICATE,"type =='XCUIElementTypeTextField' and value =='请输入手机号/邮箱'")
-    INPUTPASS = (By.IOS_PREDICATE,"type=='XCUIElementTypeSecureTextField' and value=='请输入密码'")
+    INPUTUSER = (By.IOS_PREDICATE,"type =='XCUIElementTypeStaticText' and name =='请输入手机号/邮箱'")
+    INPUTUSERACCOUNT = (By.ACCESSIBILITY_ID,"loginAccount")
+    INPUTPASS = (By.CLASS_NAME,"XCUIElementTypeSecureTextField")
     LOGINCONFIRM = (By.ACCESSIBILITY_ID,"登录")
     RESETPASS = (By.ACCESSIBILITY_ID,"密码重置")
 
 
 
     COMMENTDATA = "哇塞，这个太太太～～"
+
+
+
+    MOREDATA = (By.ACCESSIBILITY_ID,"更多")
+    GENRESELECTPRICATE = [By.IOS_PREDICATE,"type =='XCUIElementTypeButton' and name =='%s'"]

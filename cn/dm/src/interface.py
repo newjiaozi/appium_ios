@@ -254,8 +254,9 @@ def appTitleList2():
         result = resp_json["message"]["result"]["titleList"]["titles"]
         genredict = appGenrelist2(False)
         for i in result:
-            i["representGenrezh"]=genredict[i["representGenre"]]
-            result_dict[i["titleNo"]] = i
+            if i["serviceStatus"] == "SERVICE":
+                i["representGenrezh"]=genredict[i["representGenre"]]
+                result_dict[i["titleNo"]] = i
         logger.info(resp.url)
         # logger.info(result_dict)
         return result_dict
@@ -870,7 +871,6 @@ def appHomeMenuModuleMore(menuId,moduleId):
         resp = requests.get(Config("httphost") + path, params=payload, headers=Config("headers"))
         result = resp.json()["message"]["result"]
         logger.info(resp.url)
-        logger.info(result)
         return result
     except Exception:
         logger.info(resp.url)
@@ -1171,8 +1171,8 @@ def appClientVersion():
         logger.info(resp.url)
         return resp.json()["message"]["result"]["clientVersion"]
     except Exception:
-        logger.error(resp.url)
-        logger.error(resp.text)
+        logger.info(resp.url)
+        logger.info(resp.text)
         return False
 
 def appFavoriteAdd(titleNo):
@@ -1307,11 +1307,12 @@ if __name__=="__main__":
     # transArgs(1)
     # print(appClientVersion(),type(appClientVersion()))
     # print(v1TitleEpisodeLikeCount(1268,[76,75,74,72,73]))
-    trueCount = 0
-    totalCount = 100
-    for i in range(0,totalCount):
-        res = testingConfigInfo("2.2.3")
-        if res:
-            trueCount+=1
-    print("执行%s次，返回true %s次" % (totalCount,trueCount))
+    # trueCount = 0
+    # totalCount = 100
+    # for i in range(0,totalCount):
+    #     res = testingConfigInfo("2.2.3")
+    #     if res:
+    #         trueCount+=1
+    # print("执行%s次，返回true %s次" % (totalCount,trueCount))
     # testingConfigInfo()
+    print(appHome4())

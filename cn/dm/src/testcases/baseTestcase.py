@@ -33,12 +33,17 @@ class BaseTestcase(unittest.TestCase):
         desired_caps = {}
         # app_path = 'http://iosapps.itunes.apple.com/itunes-assets/Purple113/v4/93/6d/fc/936dfc4a-e3e1-3920-b90b-d53086a70a13/pre-thinned17555684376910244084.thinned.signed.beta.ipa?accessKey=1568966328_2501250152641289370_DqRe7scWPW6q6rQOEedOkyK0x4cs2QM9iYVNGCMgPWoIK8SEbIdFnDDIHUJGCnasV8LnJg8C5UQyKur%2BT90DI2qsafvnzRE4vWiuuNytUKuoTiF3K0HWigFFGnawdkZs%2FckEfx4R2OrR8y7BOTX6JuYwBplL3Wxa8k47sG%2FSxDgKA40mXzLkaeeMZzARQHLKCx8bxTFciJAlr6n7BacsZQ%3D%3D'
         # app_path = "https://deploy.dongmancorp.cn/load/app/ios/qa2/2.2.2.10_qa2_0917/2.2.2.10_qa2_0917.ipa"
-        app_path = "https://deploy.dongmancorp.cn/load/app/ios/qa2/2.2.1_pro_0918/2.2.1_pro_0918.ipa"
-        # app_path ="/Users/dongman/Downloads/dm.ipa"
+        app_path = "https://deploy.dongmancorp.cn/load/app/ios/qa2/2.2.4.4_qa_1012/2.2.4.4_qa_1012.ipa"
+        # app_path ="/var/folders/2h/xzzzfc2s4wx00sz3yzd1bcmr0000gn/T/2019912-28844-1oiwoss.rrv9j/Payload/dongman.app"
+
         cls.appPath = app_path
         desired_caps["showXcodeLog"] = True
         desired_caps['platformName'] = 'iOS'
-        desired_caps['clearSystemFiles'] = True
+        # desired_caps['clearSystemFiles'] = True
+
+        # ## simulator
+        # desired_caps['deviceName'] = 'iphone x'
+        # desired_caps['platformVersion'] = '12.3'
 
         # ## xs max
         # desired_caps['udid'] = '00008020-000E502E0E04002E'
@@ -52,30 +57,29 @@ class BaseTestcase(unittest.TestCase):
         #
 
 
-        # ip8
-        desired_caps['udid'] = '8420d2edfc2ea6dcf8e3d4c32eb9be0c84f2ee91'
-        desired_caps['deviceName'] = 'iPhone8'
-        desired_caps['platformVersion'] = '12.4'
+        # # ip8
+        # desired_caps['udid'] = '8420d2edfc2ea6dcf8e3d4c32eb9be0c84f2ee91'
+        # desired_caps['deviceName'] = 'iPhone8'
+        # desired_caps['platformVersion'] = '12.4'
 
 
 
-        # ## iPhone X
-        # desired_caps['udid'] = "f1066a9e302a39acc03838cbffea0891bfc97675"
-        # desired_caps['deviceName'] = 'iPhone x'
-        # desired_caps['platformVersion'] = '12.3.1'
+        ## iPhone X
+        desired_caps['udid'] = "f1066a9e302a39acc03838cbffea0891bfc97675"
+        desired_caps['deviceName'] = 'iPhone x'
+        desired_caps['platformVersion'] = '12.3.1'
 
-
+        # desired_caps['useNewWDA'] = True
         desired_caps["xcodeOrgId"]= "R7S9UW83XA"
         desired_caps["xcodeSigningId"]= "iPhone Developer"
         desired_caps["keychainPath"] = "/Users/dongman/Library/Keychains/login.keychain-db"
         desired_caps["keychainPassword"] = "111111"
         desired_caps['useNewWDA'] = False
-        desired_caps["derivedDataPath"]="/Users/dongman/Library/Developer/Xcode/DerivedData/WebDriverAgent-dikkwtrisltbeobjmfvpthwwekvs"
+        # desired_caps["derivedDataPath"]="/Users/dongman/Library/Developer/Xcode/DerivedData/WebDriverAgent-dikkwtrisltbeobjmfvpthwwekvs"
         desired_caps['noReset'] = False
         desired_caps['app'] = cls.appPath
         desired_caps['newCommandTimeout'] = 200
         # desired_caps['automationName'] = "XCUITest"
-        # desired_caps['useNewWDA'] = True
         desired_caps['automationName'] = "XCUITest"
         desired_caps['bundleId'] = 'com.naver.linewebtoon.cn'
 

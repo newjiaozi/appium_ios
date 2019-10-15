@@ -72,6 +72,7 @@ class MyPageTestcase(BaseTestcase):
         self.MPA.toDefaultPage()
         self.assertTrue(self.MPA.getInAccountManage())
 
+    @unittest.skip("skip")
     def test023_getInMyWallet(self):
         self.MPA.toDefaultPage()
         self.assertTrue(self.MPA.getInMyWallet())

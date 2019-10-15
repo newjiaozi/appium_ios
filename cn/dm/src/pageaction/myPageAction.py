@@ -47,7 +47,15 @@ class MyPageAction(BasePageAction):
         else:
             if self.tapAccountManage():
                 self.swith2PassLogin()
+
+                ele_account = self.waitElePresents(MP.INPUTUSERACCOUNT)
+                ele_accountx,ele_accounty = self.getXY(ele_account)
+                self.tapByXY(ele_accountx+50,ele_accounty)
                 self.waitElePresents(MP.INPUTUSER).send_keys(user)
+
+                # ele_password = self.waitElePresents(MP.INPUTUSERPASSWORD)
+                # ele_passwordx,ele_passwordy = self.getXY(ele_password)
+                # self.tapByXY(ele_passwordx+50,ele_passwordy)
                 self.waitElePresents(MP.INPUTPASS).send_keys(passwd)
                 logger.info("点击【登录】")
                 self.waitEleClick(MP.LOGINCONFIRM)

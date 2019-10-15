@@ -35,8 +35,11 @@ class MyPage(BasePage):
 
     ## 密码登录页面
     TOCODELOGIN = (By.ACCESSIBILITY_ID,"验证码登录")
-    INPUTUSER = (By.IOS_PREDICATE,"type =='XCUIElementTypeTextField' and value =='请输入手机号/邮箱'")
-    INPUTPASS = (By.IOS_PREDICATE,"type=='XCUIElementTypeSecureTextField' and value=='请输入密码'")
+    # INPUTUSER = (By.IOS_PREDICATE,"type =='XCUIElementTypeTextField' and value =='请输入手机号/邮箱'")
+    INPUTUSER = (By.IOS_PREDICATE,"type =='XCUIElementTypeStaticText' and name =='请输入手机号/邮箱'")
+    INPUTUSERACCOUNT = (By.ACCESSIBILITY_ID,"loginAccount")
+    INPUTPASS = (By.CLASS_NAME,"XCUIElementTypeSecureTextField")
+    INPUTUSERPASSWORD = (By.ACCESSIBILITY_ID,"loginPassword")
     LOGINCONFIRM = (By.ACCESSIBILITY_ID,"登录")
     RESETPASS = (By.ACCESSIBILITY_ID,"密码重置")
 
@@ -108,13 +111,13 @@ class MyPage(BasePage):
     QUICKMOBILETITLE = (By.ACCESSIBILITY_ID,"最近使用手机号登录")
     QUICKMOBILEICON = (By.ACCESSIBILITY_ID,"fastLoginPhone") ## 不可见,手机的小图标
     QUICKMOBILEACCOUNT = (By.ACCESSIBILITY_ID,"136****1996")
-    QUICKMOBILEPASSWD = (By.IOS_PREDICATE,"type == 'XCUIElementTypeSecureTextField' and value == '请输入密码'")
+    QUICKMOBILEPASSWD = (By.CLASS_NAME,"XCUIElementTypeSecureTextField")
     QUICKMOBILEPASSWDTITLE = (By.ACCESSIBILITY_ID,"登录手机账号1368****996")
     ##邮箱
     QUICKEMAILTITLE = (By.ACCESSIBILITY_ID,"最近使用邮箱登录")
     QUICKEMAILICON = (By.ACCESSIBILITY_ID,"fastLoginMail") ## 不可见,小图标
     QUICKEMAILACCOUNT = (By.ACCESSIBILITY_ID,"84978****@qq.com")
-    QUICKEMAILPASSWD = (By.IOS_PREDICATE,"type == 'XCUIElementTypeSecureTextField' and value == '请输入密码'")
+    QUICKEMAILPASSWD = (By.CLASS_NAME,"XCUIElementTypeSecureTextField")
     QUICKEMAILPASSWDTITLE = (By.ACCESSIBILITY_ID,"登录邮箱账号84978****@qq.com")
     ##微博
     QUICKWEIBOTITLE = (By.ACCESSIBILITY_ID,"最近使用微博登录")

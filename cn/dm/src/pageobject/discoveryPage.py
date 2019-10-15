@@ -74,11 +74,14 @@ class DiscoveryPage(BasePage):
     DMRECOMMEND = (By.ACCESSIBILITY_ID,"咚漫推荐")
     DMMORE = (By.XPATH,'//XCUIElementTypeCell[@name="HomeRecommendMoreCell"]/XCUIElementTypeStaticText[@name="更多"]')
     DMMORETITLE = [By.XPATH,'//XCUIElementTypeCell[@name="HomeRecommendMoreCell"]/XCUIElementTypeStaticText[@name="%s"]']
+    DMMORECELL = (By.ACCESSIBILITY_ID,"HomeRecommendMoreCell")
 
     ##佳作抢先看
     PRIORITY = (By.ACCESSIBILITY_ID,"佳作抢先看")
     PRIORITYMORE =  (By.XPATH,'//XCUIElementTypeCell[@name="HomePriorityMoreCell"]/XCUIElementTypeStaticText[@name="更多"]')
     PRIORITYMORETITLE =  [By.XPATH,'//XCUIElementTypeCell[@name="HomePriorityMoreCell"]/XCUIElementTypeStaticText[@name="%s"]']
+    PRIORITYMORECELL = (By.ACCESSIBILITY_ID,"HomePriorityMoreCell")
+
 
 
     ##新作登
@@ -86,6 +89,7 @@ class DiscoveryPage(BasePage):
     NEWTITLELOGIN = (By.ACCESSIBILITY_ID,"新作推荐")
     NEWTITLEMORE = (By.XPATH,'//XCUIElementTypeCell[@name="HomeNewTitleMoreCell"]/XCUIElementTypeStaticText[@name="更多"]')
     NEWTITLEMORETITLE = [By.XPATH,'//XCUIElementTypeCell[@name="HomeNewTitleMoreCell"]/XCUIElementTypeStaticText[@name="%s"]']
+    NEWTITLEMORECELL = (By.ACCESSIBILITY_ID,"HomeNewTitleMoreCell")
 
 
     ##barbanner
@@ -97,6 +101,7 @@ class DiscoveryPage(BasePage):
     ##分类
     GENREMORE = (By.XPATH,'//XCUIElementTypeCell[@name="HomeGenreMoreCell"]/XCUIElementTypeStaticText[@name="更多"]')
     GENREMORETITLE = [By.XPATH,'//XCUIElementTypeCell[@name="HomeGenreMoreCell"]/XCUIElementTypeStaticText[@name="%s"]']
+    GENREMORECELL = (By.ACCESSIBILITY_ID,"HomeGenreMoreCell")
 
 
 
@@ -104,6 +109,8 @@ class DiscoveryPage(BasePage):
     THEME = (By.ACCESSIBILITY_ID,"主题专区")
     THEMEMORE = (By.XPATH,'//XCUIElementTypeCell[@name="HomeThemeMoreCell"]/XCUIElementTypeStaticText[@name="更多"]')
     THEMEMORETITLE = [By.XPATH,'//XCUIElementTypeCell[@name="HomeThemeMoreCell"]/XCUIElementTypeStaticText[@name="%s"]']
+    THEMEMORECELL = (By.ACCESSIBILITY_ID,"HomeThemeMoreCell")
+    MOREDATAPREDICATE = (By.IOS_PREDICATE,"type == 'XCUIElementTypeStaticText' and name == '更多'")
 
 
     ##猜你喜欢
@@ -165,6 +172,7 @@ class DiscoveryPage(BasePage):
 
     CUSTOMIZEMENUGENRERANK = (By.ACCESSIBILITY_ID,"genreListCell")
     CUSTOMIZEMENUGENRERANKTEXT = [By.ACCESSIBILITY_ID,"%s类排行"]
+
     CUSTOMIZEMENUGENRERANKMORE = (By.XPATH,'//XCUIElementTypeCell[@name="genreListCell"]/XCUIElementTypeStaticText[@name="更多"]')
     CUSTOMIZEMENUGENRERANKTITLE = [By.XPATH,'//XCUIElementTypeCell[@name="genreListCell"]/XCUIElementTypeStaticText[@name="%s"]']
 
@@ -175,6 +183,6 @@ class DiscoveryPage(BasePage):
     CUSTOMIZEMENUFINISHTITLE = [By.XPATH,'//XCUIElementTypeCell[@name="finishGenreListCell"]/XCUIElementTypeStaticText[@name="%s"]']
 
     ## 自定义菜单
-    CUSTOMIZEMENUMODULE = [By.ACCESSIBILITY_ID,"%s"]
-    CUSTOMIZEMENUMODULEMORE = [By.XPATH,'//XCUIElementTypeCell[@name="%s"]/XCUIElementTypeStaticText[@name="更多"]']
-    CUSTOMIZEMENUMODULETITLE = [By.XPATH,'//XCUIElementTypeCell[@name="%s"]/XCUIElementTypeStaticText[@name="%s"]']
+    CUSTOMIZEMENUMODULE = [By.ACCESSIBILITY_ID,"%sModuleListCell"]
+    CUSTOMIZEMENUMODULEMORE = [By.XPATH,'//XCUIElementTypeCell[@name="%sModuleListCell"]/XCUIElementTypeStaticText[@name="更多"]']
+    CUSTOMIZEMENUMODULETITLE = [By.XPATH,'//XCUIElementTypeCell[@name="%sModuleListCell"]/XCUIElementTypeStaticText[@name="%s"]']

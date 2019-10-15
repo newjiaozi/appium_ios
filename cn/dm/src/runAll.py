@@ -17,8 +17,8 @@ def runAll():
     suite = unittest.TestSuite()
     # suite.addTests(unittest.TestLoader().loadTestsFromTestCase(MyPageTestcase))
     # suite.addTests(unittest.TestLoader().loadTestsFromTestCase(MyCartoonPageTestcase))
-    # suite.addTests(unittest.TestLoader().loadTestsFromTestCase(DiscoveryPageTestcase))
-    suite.addTests(unittest.TestLoader().loadTestsFromTestCase(UpdatePageTestcase))
+    suite.addTests(unittest.TestLoader().loadTestsFromTestCase(DiscoveryPageTestcase))
+    # suite.addTests(unittest.TestLoader().loadTestsFromTestCase(UpdatePageTestcase))
 
     with open(result_path,'wb') as f:
         runner = HTMLTestRunner(stream=f, title='IOS测试报告', description='测试报告 详细信息')

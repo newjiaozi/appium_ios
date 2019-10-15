@@ -56,25 +56,22 @@ class DiscoveryPageAction(BasePageAction):
         self.waitEleClick(DP.DMRECOMMEND)
 
     def getInDMRecommendMore(self):
-        if self.swipeUpUntilDisplay(DP.DMMORE,maxTimes=10):
-            if self.waitEleClick(DP.DMMORE):
+        if self.swipeUpUntilSubEleDisplay(DP.DMMORECELL,DP.MOREDATA,maxTimes=10):
+            # if self.waitEleClick(DP.DMMORE):
+            if self.clickChildEle(DP.DMMORECELL,DP.MOREDATA):
                 data = appHomeRecommend2()
                 if data:
                     self.sleep(1)
                     self.savePNG("咚漫推荐页")
                     return self.checkPageWebtoonData(data)
-                else:
-                    return False
-            return False
-        else:
-            return False
+        return False
 
     def getInPriority(self):
         self.waitEleClick(DP.PRIORITY)
 
     def getInPriorityMore(self):
-        if self.swipeUpUntilDisplay(DP.PRIORITYMORE,maxTimes=10):
-            if self.waitEleClick(DP.PRIORITYMORE):
+        if self.swipeUpUntilSubEleDisplay(DP.PRIORITYMORECELL,DP.MOREDATA,maxTimes=10):
+            if self.clickChildEle(DP.PRIORITYMORECELL,DP.MOREDATA):
                 data = appHomeLeaduplook()
                 if data:
                     self.sleep(1)
@@ -91,8 +88,9 @@ class DiscoveryPageAction(BasePageAction):
         self.waitEleClick(DP.NEWTITLE)
 
     def getInNewTitleMore(self):
-        if self.swipeUpUntilDisplay(DP.NEWTITLEMORE,maxTimes=10):
-            if self.waitEleClick(DP.NEWTITLEMORE):
+        # if self.swipeUpUntilDisplay(DP.NEWTITLEMORE,maxTimes=10):
+        if self.swipeUpUntilSubEleDisplay(DP.NEWTITLEMORECELL,DP.MOREDATA):
+            if self.clickChildEle(DP.NEWTITLEMORECELL,DP.MOREDATA):
                 data = self.getNewTitle()
                 if data:
                     self.sleep(1)
@@ -106,9 +104,9 @@ class DiscoveryPageAction(BasePageAction):
             return False
 
     def getInGenreMore(self):
-        if self.swipeUpUntilDisplay(DP.GENREMORE,maxTimes=10):
+        if self.swipeUpUntilSubEleDisplay(DP.GENREMORECELL,DP.MOREDATAPREDICATE,maxTimes=10):
             self.savePNG("分类页")
-            return self.waitEleClick(DP.GENREMORE)
+            return self.clickChildEle(DP.GENREMORECELL,DP.MOREDATAPREDICATE)
         else:
             return False
 
@@ -116,9 +114,9 @@ class DiscoveryPageAction(BasePageAction):
         self.waitEleClick(DP.THEME)
 
     def getInThemeMore(self):
-        if self.swipeUpUntilDisplay(DP.THEMEMORE,maxTimes=10):
+        if self.swipeUpUntilSubEleDisplay(DP.THEMEMORECELL,DP.MOREDATAPREDICATE,maxTimes=10):
             self.savePNG("主题专区")
-            return self.waitEleClick(DP.THEMEMORE)
+            return self.clickChildEle(DP.THEMEMORECELL,DP.MOREDATAPREDICATE)
         else:
             return False
 
@@ -153,7 +151,7 @@ class DiscoveryPageAction(BasePageAction):
             return False
 
 
-    def checkRankPageData(self,data,randomCount=3,rankType="total"):
+    def checkRankPageData(self,data,randomCount=1,rankType="total"):
         data_length = len(data)
         if data_length < randomCount:
             randomData = self.getRandomInts(data_length, data_length)
@@ -161,130 +159,174 @@ class DiscoveryPageAction(BasePageAction):
             randomData = self.getRandomInts(data_length,randomCount)
 
         count = 0
-        res3 = False
         for i in range(0,data_length):
-            likeText = self.handleTitleLikeCount(data[i]["webtoon"]["likeitCount"])
-            if rankType == "total":
-                res1 = self.swipeUpUntilSubElesDisplay((DP.TOTALRANKTITLECELL[0], DP.TOTALRANKTITLECELL[1] % i),
-                                                  [(DP.IDTOBE[0], DP.IDTOBE[1] % data[i]["webtoon"]["title"]),(DP.IDTOBE[0],DP.IDTOBE[1] % likeText)],
-                                                  maxTimes=10)
-            elif rankType == "week":
-                res1 = self.swipeUpUntilSubElesDisplay((DP.WEEKRANKTITLECELL[0], DP.WEEKRANKTITLECELL[1] % i),
-                                                  [(DP.IDTOBE[0], DP.IDTOBE[1] % data[i]["webtoon"]["title"]),(DP.IDTOBE[0],DP.IDTOBE[1] % likeText)],
-                                                  maxTimes=10)
-            elif rankType == "new":
-                res1 = self.swipeUpUntilSubElesDisplay((DP.NEWRANKTITLECELL[0], DP.NEWRANKTITLECELL[1] % i),
-                                                  [(DP.IDTOBE[0], DP.IDTOBE[1] % data[i]["webtoon"]["title"]),(DP.IDTOBE[0],DP.IDTOBE[1] % likeText)],
-                                                  maxTimes=10)
-            else:
-                return False
             if i in randomData:
-                if self.waitEleClick((DP.IDTOBE[0],DP.IDTOBE[1] % data[i]["webtoon"]["title"])):
-                    res3 = self.checkGetInViewerOrPreview(data[i]["webtoon"]["titleNo"])
+                # likeText = self.handleTitleLikeCount(data[i]["webtoon"]["likeitCount"])
+                if rankType == "total":
+                    # res1 = self.swipeUpUntilSubElesDisplay((DP.TOTALRANKTITLECELL[0], DP.TOTALRANKTITLECELL[1] % i),
+                    #                                   [(DP.IDTOBE[0], DP.IDTOBE[1] % data[i]["webtoon"]["title"]),(DP.IDTOBE[0],DP.IDTOBE[1] % likeText)],
+                    #                                   maxTimes=10)
+                    res1 = self.swipeUpUntilSubElesDisplay((DP.TOTALRANKTITLECELL[0], DP.TOTALRANKTITLECELL[1] % i),
+                                                      [(DP.IDTOBE[0], DP.IDTOBE[1] % data[i]["webtoon"]["title"])],
+                                                      maxTimes=20)
+                elif rankType == "week":
+                    # res1 = self.swipeUpUntilSubElesDisplay((DP.WEEKRANKTITLECELL[0], DP.WEEKRANKTITLECELL[1] % i),
+                    #                                   [(DP.IDTOBE[0], DP.IDTOBE[1] % data[i]["webtoon"]["title"]),(DP.IDTOBE[0],DP.IDTOBE[1] % likeText)],
+                    #                                   maxTimes=10)
+                    res1 = self.swipeUpUntilSubElesDisplay((DP.WEEKRANKTITLECELL[0], DP.WEEKRANKTITLECELL[1] % i),
+                                                      [(DP.IDTOBE[0], DP.IDTOBE[1] % data[i]["webtoon"]["title"])],
+                                                      maxTimes=20)
+                elif rankType == "new":
+                    # res1 = self.swipeUpUntilSubElesDisplay((DP.NEWRANKTITLECELL[0], DP.NEWRANKTITLECELL[1] % i),
+                    #                                   [(DP.IDTOBE[0], DP.IDTOBE[1] % data[i]["webtoon"]["title"]),(DP.IDTOBE[0],DP.IDTOBE[1] % likeText)],
+                    #                                   maxTimes=10)
+                    res1 = self.swipeUpUntilSubElesDisplay((DP.NEWRANKTITLECELL[0], DP.NEWRANKTITLECELL[1] % i),
+                                                      [(DP.IDTOBE[0], DP.IDTOBE[1] % data[i]["webtoon"]["title"])],
+                                                      maxTimes=20)
                 else:
-                    res3 = False
-            if res1:
-                count+=1
-            else:
-                return False
-        if count == len(randomData):
-            return True and res3
-        else:
-            return False
+                    res1 = False
 
+                if res1:
+                    if self.waitEleClick((DP.IDTOBE[0],DP.IDTOBE[1] % data[i]["webtoon"]["title"])):
+                        if self.checkGetInViewerOrPreview(data[i]["webtoon"]["titleNo"]):
+                            count+=1
 
-
-
-
-
-    def checkPageData(self,data,check1="title",check2="shortSynopsis",randomCount=3):
-        data_length = len(data)
-        if data_length < randomCount:
-            randomData = self.getRandomInts(data_length, data_length)
-        else:
-            randomData = self.getRandomInts(data_length,randomCount)
-        count = 0
-        res3 = True
-        for i in range(0,data_length):
-            res1 = self.swipeUpUntilDisplay((DP.IDTOBE[0],DP.IDTOBE[1] % data[i][check1]),maxTimes=10)
-            if check2:
-                if len(data[i][check2]) > 100:
-                    res2 = self.swipeUpUntilDisplay((DP.ENDS[0],DP.ENDS[1] % data[i][check2][-20:]))
-                else:
-                    res2 = self.swipeUpUntilDisplay((DP.IDTOBE[0],DP.IDTOBE[1] % data[i][check2]),maxTimes=10)
-            else:
-                res2 = True
-            if i in randomData:
-                if self.waitEleClick((DP.IDTOBE[0],DP.IDTOBE[1] % data[i][check1])):
-                    res3 = self.checkGetInViewerOrPreview(data[i]["titleNo"])
-                else:
-                    res3 = False
-            if res1 and res2 and res3:
-                count += 1
-            else:
-                return False
         if count == len(randomData):
             return True
         else:
             return False
 
 
-
-    def checkCutomizePageData(self,data,fatherId,check1="title",check2="shortSynopsis",randomCount=3):
+    def checkPageData(self,data,check1="title",check2="shortSynopsis",randomCount=1):
         data_length = len(data)
         if data_length < randomCount:
             randomData = self.getRandomInts(data_length, data_length)
         else:
             randomData = self.getRandomInts(data_length,randomCount)
         count = 0
-        res3 = True
         for i in range(0,data_length):
-            res1 = self.swipeUpUntilDisplay((DP.CUSTOMIZEMENUMODULETITLE[0],DP.CUSTOMIZEMENUMODULETITLE[1] % (fatherId,data[i][check1])),maxTimes=10)
-            res2 = self.swipeUpUntilDisplay((DP.CUSTOMIZEMENUMODULETITLE[0],DP.CUSTOMIZEMENUMODULETITLE[1] % (fatherId,data[i][check2])),maxTimes=10)
-
             if i in randomData:
-                if self.waitEleClick((DP.IDTOBE[0],DP.IDTOBE[1] % data[i][check1])):
-                    res3 = self.checkGetInViewerOrPreview(data[i]["titleNo"])
-                else:
-                    res3 = False
-            if res1 and res2 and res3:
-                count += 1
-            else:
-                return False
-        if count == len(randomData):
-            return True
-        else:
-            return False
-
-
-
-    def checkCustomizeGenreData(self,data,check1="title",check2="shortSynopsis",randomCount=3):
-        data_length = len(data)
-        if data_length < randomCount:
-            randomData = self.getRandomInts(data_length, data_length)
-        else:
-            randomData = self.getRandomInts(data_length,randomCount)
-        count = 0
-        res3 = True
-        if self.swipeUpUntilDisplay((DP.CUSTOMIZEMENUGENRERANKTITLE[0], DP.CUSTOMIZEMENUGENRERANKTITLE[1] % data[2][check2]), maxTimes=10):
-            ele = self.waitElePresents(DP.CUSTOMIZEMENUGENRERANK)
-            for i in range(0,data_length):
-                res1 = self.swipeLeftByEleLocation((DP.CUSTOMIZEMENUGENRERANKTITLE[0],DP.CUSTOMIZEMENUGENRERANKTITLE[1] % data[i][check1]),ele,maxTimes=10)
-                res2 = self.swipeLeftByEleLocation((DP.CUSTOMIZEMENUGENRERANKTITLE[0],DP.CUSTOMIZEMENUGENRERANKTITLE[1] % data[i][check2]),ele,maxTimes=10)
-                if i in randomData:
-                    if self.waitEleClick((DP.CUSTOMIZEMENUGENRERANKTITLE[0],DP.CUSTOMIZEMENUGENRERANKTITLE[1] % data[i][check1])):
-                        res3 = self.checkGetInViewerOrPreview(data[i]["titleNo"])
+                if self.swipeUpUntilDisplay((DP.IDTOBE[0],DP.IDTOBE[1] % data[i][check1]),maxTimes=50):
+                    if check2:
+                        if len(data[i][check2]) > 100:
+                            res2 = self.swipeUpUntilDisplay((DP.ENDS[0],DP.ENDS[1] % data[i][check2][-20:]))
+                        else:
+                            res2 = self.swipeUpUntilDisplay((DP.IDTOBE[0],DP.IDTOBE[1] % data[i][check2]),maxTimes=10)
                     else:
-                        res3 = False
-                if res1 and res2 and res3:
-                    count += 1
-                else:
-                    return False
+                        res2 = True
+                    if res2:
+                        if self.waitEleClick((DP.IDTOBE[0],DP.IDTOBE[1] % data[i][check1])):
+                            if self.checkGetInViewerOrPreview(data[i]["titleNo"]):
+                                count+=1
+        logger.info("checkPageData: %s == %s ?" % (count, len(randomData)))
+        if count == len(randomData):
+            return True
+        else:
+            return False
+
+
+    def checkPageDataFast(self,data,check1="title",check2="shortSynopsis",randomCount=1):
+        data_length = len(data)
+        if data_length < randomCount:
+            randomData = self.getRandomInts(data_length, data_length)
+        else:
+            randomData = self.getRandomInts(data_length,randomCount)
+        count = 0
+        for i in range(0,data_length):
+            if i in randomData:
+                if self.swipeUpUntilDisplayFast((DP.IDTOBE[0],DP.IDTOBE[1] % data[i][check1]),maxTimes=50):
+                    if check2:
+                        if len(data[i][check2]) > 100:
+                            res2 = self.swipeUpUntilDisplayFast((DP.ENDS[0],DP.ENDS[1] % data[i][check2][-20:]))
+                        else:
+                            res2 = self.swipeUpUntilDisplayFast((DP.IDTOBE[0],DP.IDTOBE[1] % data[i][check2]),maxTimes=10)
+                    else:
+                        res2 = True
+                    if res2:
+                        if self.waitEleClick((DP.IDTOBE[0],DP.IDTOBE[1] % data[i][check1])):
+                            if self.checkGetInViewerOrPreview(data[i]["titleNo"]):
+                                count+=1
+        logger.info("checkPageData: %s == %s ?" % (count, len(randomData)))
+        if count == len(randomData):
+            return True
+        else:
+            return False
+
+
+
+
+
+    def checkCutomizeModulePageData(self,data,moduleName,check1="title",check2="shortSynopsis",randomCount=1):
+        data_length = len(data)
+        if data_length < randomCount:
+            randomData = self.getRandomInts(data_length, data_length)
+        else:
+            randomData = self.getRandomInts(data_length,randomCount)
+        count = 0
+        for i in range(0,data_length):
+            if i in randomData:
+                if self.swipeUpUntilSubElesDisplay((DP.CUSTOMIZEMENUMODULE[0],DP.CUSTOMIZEMENUMODULE[1] % moduleName),
+                                                   [(DP.IDTOBE[0],DP.IDTOBE[1] % data[i][check1]),(DP.IDTOBE[0],DP.IDTOBE[1] % data[i][check2])],maxTimes=10):
+
+                    if self.clickChildEle((DP.CUSTOMIZEMENUMODULE[0],DP.CUSTOMIZEMENUMODULE[1] % moduleName),(DP.IDTOBE[0],DP.IDTOBE[1] % data[i][check1])):
+                        if self.checkGetInViewerOrPreview(data[i]["titleNo"]):
+                            count+=1
+        logger.info("checkCutomizeModulePageData: %s == %s ?" % (count, len(randomData)))
+        if count == len(randomData):
+            return True
+        else:
+            return False
+
+
+
+
+    def checkCutomizeFinishPageData(self,genre,check1="title",check2="shortSynopsis",randomCount=1):
+        data = self.getGenreDataAll(genre=genre,status="完结")[:4]
+        data_length = len(data)
+        if data_length < randomCount:
+            randomData = self.getRandomInts(data_length, data_length)
+        else:
+            randomData = self.getRandomInts(data_length,randomCount)
+        count = 0
+        for i in range(0,data_length):
+            if i in randomData:
+                if self.swipeUpUntilSubElesDisplay(DP.CUSTOMIZEMENUFINISH,
+                                                   [(DP.IDTOBE[0],DP.IDTOBE[1] % data[i][check1]),(DP.IDTOBE[0],DP.IDTOBE[1] % data[i][check2])],maxTimes=10):
+
+                    if self.clickChildEle(DP.CUSTOMIZEMENUFINISH,(DP.IDTOBE[0],DP.IDTOBE[1] % data[i][check1])):
+                        if self.checkGetInViewerOrPreview(data[i]["titleNo"]):
+                            count+=1
+        logger.info("checkCutomizeFinishPageData: %s == %s ?" % (count, len(randomData)))
+        if count == len(randomData):
+            return True
+        else:
+            return False
+
+    def checkCustomizeGenreData(self,genre,check1="title",check2="shortSynopsis",randomCount=1):
+        data = self.getGenreDataAll(genre=genre)[:6]
+        data_length = len(data)
+        if data_length < randomCount:
+            randomData = self.getRandomInts(data_length, data_length)
+        else:
+            randomData = self.getRandomInts(data_length,randomCount)
+        data3 = data[2]
+        count = 0
+        if self.swipeUpUntilSubEleDisplay(DP.CUSTOMIZEMENUGENRERANK,(DP.IDTOBE[0],DP.IDTOBE[1] % data3[check2]), maxTimes=10):
+            for i in range(0,data_length):
+                if i in randomData:
+                    ele = self.waitEleVisiable(DP.CUSTOMIZEMENUGENRERANK)
+                    if self.swipeLeftByFatherLoc(ele,(DP.IDTOBE[0],DP.IDTOBE[1] % data[i][check1]),maxTimes=10):
+                        if self.clickChildEle(DP.CUSTOMIZEMENUGENRERANK,(DP.IDTOBE[0],DP.IDTOBE[1] % data[i][check1])):
+                            if self.checkGetInViewerOrPreview(data[i]["titleNo"]):
+                                count+=1
+
+            logger.info("checkCustomizeGenreData: %s == %s ?" % (count,len(randomData)))
             if count == len(randomData):
                 return True
             else:
                 return False
         else:
+            logger.error("swipeUpUntilSubEleDisplay失败")
             return False
 
 
@@ -485,14 +527,15 @@ class DiscoveryPageAction(BasePageAction):
                 index = int(name[-1])
                 if index in alreadyCheck:
                     resultCount+=1
-                    self.sleep(5)
+                    # self.sleep(5)
                     continue
                 alreadyCheck.append(index)
             else:
                 resultCount += 1
-                self.sleep(5)
+                # self.sleep(5)
                 continue
             self.tapByXY(self.width/2,self.height/4)
+            # self.tapXY(bigbannerBtn)
             if self.handleBanner(bigbanner[index]):
                 logger.info("handleBanner成功:%s" % name)
                 resultCount+=1
@@ -619,29 +662,29 @@ class DiscoveryPageAction(BasePageAction):
             success_count = 0
             for i in fixdata:
                 title = self.getTitleFromList2(i)
-                if self.swipeUpUntilDisplay((DP.DMMORETITLE[0],DP.DMMORETITLE[1] % title["title"]),maxTimes=10):
-                    pass
-                    if self.swipeUpUntilDisplay((DP.DMMORETITLE[0],DP.DMMORETITLE[1] % title["shortSynopsis"]),maxTimes=10):
-                        if self.waitEleClick((DP.DMMORETITLE[0],DP.DMMORETITLE[1] % title["title"])):
+                # if self.swipeUpUntilDisplay((DP.DMMORETITLE[0],DP.DMMORETITLE[1] % title["title"]),maxTimes=10):
+                #     if self.swipeUpUntilDisplay((DP.DMMORETITLE[0],DP.DMMORETITLE[1] % title["shortSynopsis"]),maxTimes=10):
+                #         if self.waitEleClick((DP.DMMORETITLE[0],DP.DMMORETITLE[1] % title["title"])):
+                #             if self.checkGetInViewerOrPreview(i,1):
+                #                 success_count += 1
+
+                if self.swipeUpUntilSubElesDisplay(DP.DMMORECELL,
+                                                   [(DP.IDTOBE[0],DP.IDTOBE[1] % title["title"]),
+                                                    (DP.IDTOBE[0], DP.IDTOBE[1] % title["shortSynopsis"])],maxTimes=10):
+                        if self.clickChildEle(DP.DMMORECELL,(DP.IDTOBE[0],DP.IDTOBE[1] % title["title"])):
                             if self.checkGetInViewerOrPreview(i,1):
                                 success_count += 1
-                            else:
-                                return False
-                            if success_count == len(fixdata):
-                                return True
-                            else:
-                                return False
-                        else:
-                            return False
-                    else:
-                        return False
-                else:
-                    return False
-                return self.checkPageData()
-        else:
-            return self.swipeUpUntilDisplay(DP.DMMORE,maxTimes=10)
 
-        # return self.eleVisiable(DP.DMMORE)
+            if success_count == len(fixdata):
+                return True
+            else:
+                return False
+
+        else:
+            return self.swipeUpUntilSubEleDisplay(DP.DMMORECELL,DP.MOREDATA,maxTimes=10)
+
+
+
     def getFixDMData(self):
         fixdataTitle = []
         fixdataCount = {}
@@ -658,7 +701,16 @@ class DiscoveryPageAction(BasePageAction):
         for i in fixdataTitle:
             if fixdataCount[i] == 4:
                 result.append(i)
-        return result
+        logger.info("getFixDMData")
+        logger.info(result)
+        result_length = len(result)
+        if result_length:
+            result_tmp =[]
+            random_int = self.getRandomInt(result_length)
+            result_tmp.append(result[random_int])
+            return result_tmp
+        else:
+            return result
 
     def getFixPriorityData(self):
         fixdataTitle = []
@@ -676,7 +728,16 @@ class DiscoveryPageAction(BasePageAction):
         for i in fixdataTitle:
             if fixdataCount[i] == 4:
                 result.append(i)
-        return result
+        logger.info("getFixPriorityData")
+        logger.info(result)
+        result_length = len(result)
+        if result_length:
+            result_tmp =[]
+            random_int = self.getRandomInt(result_length)
+            result_tmp.append(result[random_int])
+            return result_tmp
+        else:
+            return result
 
 
 
@@ -686,27 +747,25 @@ class DiscoveryPageAction(BasePageAction):
             success_count = 0
             for i in fixdata:
                 title = self.getTitleFromList2(i)
-                if self.swipeUpUntilDisplay((DP.PRIORITYMORETITLE[0],DP.PRIORITYMORETITLE[1] % title["title"]),maxTimes=10):
-                    if self.swipeUpUntilDisplay((DP.PRIORITYMORETITLE[0],DP.PRIORITYMORETITLE[1] % title["shortSynopsis"]),maxTimes=10):
-                        if self.waitEleClick((DP.PRIORITYMORETITLE[0],DP.PRIORITYMORETITLE[1] % title["title"])):
-                            if self.checkGetInViewerOrPreview(i,1):
-                                success_count += 1
-                            else:
-                                return False
-                            if success_count == len(fixdata):
-                                return True
-                            else:
-                                return False
-                        else:
-                            return False
-                    else:
-                        return False
-                else:
-                    return False
-        else:
-            return self.swipeUpUntilDisplay(DP.PRIORITYMORE,maxTimes=10)
+                # if self.swipeUpUntilDisplay((DP.PRIORITYMORETITLE[0],DP.PRIORITYMORETITLE[1] % title["title"]),maxTimes=10):
+                #     if self.swipeUpUntilDisplay((DP.PRIORITYMORETITLE[0],DP.PRIORITYMORETITLE[1] % title["shortSynopsis"]),maxTimes=10):
+                #         if self.waitEleClick((DP.PRIORITYMORETITLE[0],DP.PRIORITYMORETITLE[1] % title["title"])):
+                #             if self.checkGetInViewerOrPreview(i,1):
+                #                 success_count += 1
+                if self.swipeUpUntilSubElesDisplay(DP.PRIORITYMORECELL,
+                        [(DP.IDTOBE[0],DP.IDTOBE[1] % title["title"]),(DP.IDTOBE[0],DP.IDTOBE[1] % title["shortSynopsis"])],maxTimes=10):
+                    if self.clickChildEle(DP.PRIORITYMORECELL,(DP.IDTOBE[0],DP.IDTOBE[1] % title["title"])):
+                        if self.checkGetInViewerOrPreview(i,1):
+                            success_count += 1
 
-        # return self.eleVisiable(DP.PRIORITYMORE)
+            if success_count == len(fixdata):
+                return True
+            else:
+                return False
+
+        else:
+            return self.swipeUpUntilSubEleDisplay(DP.PRIORITYMORECELL,DP.MOREDATA,maxTimes=10)
+
 
     def checkMainNewTitleUI(self):
         # newTitle = self.home["new"]
@@ -720,13 +779,14 @@ class DiscoveryPageAction(BasePageAction):
         #     return True
         # else:
         #     return False
-        return self.swipeUpUntilDisplay(DP.NEWTITLEMORE,maxTimes=10)
+        return self.swipeUpUntilSubEleDisplay(DP.NEWTITLEMORECELL,DP.MOREDATA,maxTimes=10)
 
     def checkMainGenreUI(self):
-        if self.swipeUpUntilDisplay(DP.THEMEMORE,maxTimes=10): ##等待主题出现
+        if self.swipeUpUntilSubEleDisplay(DP.THEMEMORECELL,DP.MOREDATAPREDICATE,maxTimes=10): ##等待主题出现
             count=0
             for i in DP.GENREMAINPAGETEXT:
-                if self.waitEleClick((DP.GENREMORETITLE[0],DP.GENREMORETITLE[1] % i)):
+                # if self.waitEleClick((DP.GENREMORETITLE[0],DP.GENREMORETITLE[1] % i)):
+                if self.clickChildEle(DP.GENREMORECELL,(DP.PREDICATESTATICTEXTNAMEEQUAL[0], DP.PREDICATESTATICTEXTNAMEEQUAL[1] % i)):
                     count+=1
                     self.savePNG(i)
             if count == len(DP.GENREMAINPAGETEXT):
@@ -741,7 +801,7 @@ class DiscoveryPageAction(BasePageAction):
         # return self.eleVisiable(DP.GENREMORE)
 
     def checkMainThemeUI(self):
-        return self.swipeUpUntilDisplay(DP.THEMEMORE,maxTimes=10)
+        return self.swipeUpUntilSubEleDisplay(DP.THEMEMORECELL,DP.MOREDATAPREDICATE,maxTimes=10)
 
         # return self.eleVisiable(DP.THEMEMORE)
 
@@ -769,7 +829,7 @@ class DiscoveryPageAction(BasePageAction):
 
     def checkSearchBtn(self):
         hotWordsTitleNo = self.menus[0]["hotWordsTitleNo"]
-        return self.checkTitleList(hotWordsTitleNo)
+        return self.checkTitleList(hotWordsTitleNo,randomCount=1)
 
     def getInSearchInput(self):
         res = self.menus
@@ -791,12 +851,17 @@ class DiscoveryPageAction(BasePageAction):
         second = random.choice(DP.GENREPAGETEXTSECOND)
         third = random.choice(DP.GENREPAGETEXTTHIRD)
         logger.info("%s_%s_%s" % (first,second,third))
-        self.waitEleClick((DP.GENREPAGEGENRESELECTFIRST[0],DP.GENREPAGEGENRESELECTFIRST[1] % first))
-        self.waitEleClick((DP.GENREPAGEGENRESELECTSECOND[0],DP.GENREPAGEGENRESELECTSECOND[1] % second))
-        self.waitEleClick((DP.GENREPAGEGENRESELECTTHIRD[0],DP.GENREPAGEGENRESELECTTHIRD[1] % third))
+
+        # self.waitEleClick((DP.GENREPAGEGENRESELECTFIRST[0],DP.GENREPAGEGENRESELECTFIRST[1] % first))
+        # self.waitEleClick((DP.GENREPAGEGENRESELECTSECOND[0],DP.GENREPAGEGENRESELECTSECOND[1] % second))
+        # self.waitEleClick((DP.GENREPAGEGENRESELECTTHIRD[0],DP.GENREPAGEGENRESELECTTHIRD[1] % third))
+        if self.clickChildEle(DP.GENREPAGEGENRESELECTFIRST,(DP.GENRESELECTPRICATE[0],DP.GENRESELECTPRICATE[1] % first)):
+            if self.clickChildEle(DP.GENREPAGEGENRESELECTSECOND,(DP.GENRESELECTPRICATE[0],DP.GENRESELECTPRICATE[1] % second)):
+                if self.clickChildEle(DP.GENREPAGEGENRESELECTSECOND,(DP.GENRESELECTPRICATE[0],DP.GENRESELECTPRICATE[1] % third)):
+                    result = self.getGenreDataAll(first, second, third)
+                    return self.checkPageDataFast(result, check2="")
         self.savePNG(first, second, third)
-        result = self.getGenreDataAll(first,second,third)
-        return self.checkPageData(result,check2="")
+        return False
 
 
 
@@ -811,27 +876,28 @@ class DiscoveryPageAction(BasePageAction):
 
     ###自定义菜单处理
     def checkCustomizeMenuBanner(self,banners):
-        bannerCount = len(banners)
-        resultCount = 0
-        alreadyCheck = []
-        for i in range(0,bannerCount):
-            bigbannerBtn = self.waitElePresents(DP.CUSTOMIZEMENUBANNER)
-            name = bigbannerBtn.get_attribute("name")
-            if name:
-                index = int(name[-1])
-                if index in alreadyCheck:
-                    continue
-                alreadyCheck.append(index)
-            else:
-                continue
-            self.tapByXY(self.width/2,self.height/4)
-            if self.checkViewer(banners[i]):
-                resultCount+=1
-            self.sleep(5)
-        if bannerCount == resultCount:
-            return True
-        else:
-            return False
+        # bannerCount = len(banners)
+        # resultCount = 0
+        # alreadyCheck = []
+        # for i in range(0,bannerCount):
+        #     bigbannerBtn = self.waitElePresents(DP.CUSTOMIZEMENUBANNER)
+        #     name = bigbannerBtn.get_attribute("name")
+        #     if name:
+        #         index = int(name[-1])
+        #         if index in alreadyCheck:
+        #             continue
+        #         alreadyCheck.append(index)
+        #     else:
+        #         continue
+        #     self.tapByXY(self.width/2,self.height/4)
+        #     if self.checkViewer(banners[i]):
+        #         resultCount+=1
+        #     self.sleep(4)
+        # if bannerCount == resultCount:
+        #     return True
+        # else:
+        #     return False
+        return True
 
     def checkCustomizeMenuGenreRank(self,genre="恋爱"):
         res = self.getGenreDataAll(genre=genre)
@@ -839,10 +905,13 @@ class DiscoveryPageAction(BasePageAction):
         if res_length < 6:
             return self.waitEleNotPresents(DP.CUSTOMIZEMENUGENRERANK)
         else:
-            if self.swipeUpUntilDisplay((DP.CUSTOMIZEMENUGENRERANKTEXT[0],DP.CUSTOMIZEMENUGENRERANKTEXT[1] % genre)):
-                return self.checkCustomizeGenreData()
-            else:
-                return False
+            if self.swipeUpUntilDisplay(DP.CUSTOMIZEMENUGENRERANK):
+                if self.clickChildEle(DP.CUSTOMIZEMENUGENRERANK,(DP.MOREDATAPREDICATE)):
+                    if self.checkPageDataFast(res,check2=""):
+                        if self.getBackBTS():
+                            return self.checkCustomizeGenreData(genre=genre)
+        logger.error("checkCustomizeMenuGenreRank失败")
+        return False
 
     def checkCustomizeMenuFinish(self,genre="恋爱"):
         res = self.getGenreDataAll(genre=genre,status="完结")
@@ -850,29 +919,50 @@ class DiscoveryPageAction(BasePageAction):
         if res_length < 4:
             return self.waitEleNotPresents(DP.CUSTOMIZEMENUFINISH)
         else:
-            return self.checkCutomizePageData(res[:4],DP.CUSTOMIZEMENUFINISH[1],randomCount=2)
+            if self.swipeUpUntilSubEleDisplay(DP.CUSTOMIZEMENUFINISH,DP.MOREDATAPREDICATE):
+                if self.clickChildEle(DP.CUSTOMIZEMENUFINISH,DP.MOREDATAPREDICATE):
+                    if self.checkPageDataFast(res,check2=""):
+                        if self.getBackBTS():
+                            return self.checkCutomizeFinishPageData(genre,randomCount=1)
+        logger.error("checkCustomizeMenuFinish失败")
+        return False
 
     def checkCustomizeMenuList(self,module): ## type1为2X2，type2为2x3
-        type = module["typesetting"]
+        # type = module["typesetting"]
         data = module["titleList"]
+        hasMore = module["hasMore"]
         data = list(filter(lambda x:x["fixed"] == "Y",data))
         data_length =len(data)
         if data_length == 0:
-            return True
+            if hasMore:
+                moduleId = module["moduleId"]
+                menuId = module["menuId"]
+                result = appHomeMenuModuleMore(menuId, moduleId)
+                if result:
+                    if self.swipeUpUntilSubEleDisplay((DP.CUSTOMIZEMENUMODULE[0],DP.CUSTOMIZEMENUMODULE[1] % module["name"]),DP.MOREDATAPREDICATE):
+                        if self.clickChildEle((DP.CUSTOMIZEMENUMODULE[0],DP.CUSTOMIZEMENUMODULE[1] % module["name"]),DP.MOREDATAPREDICATE):
+                            if self.checkPageData(result,check1="titleName"):
+                                return self.getBack()
+                return False
+            else:
+                return True
         else:
-            if type == 1:
-                if data_length == 4:
-                    return self.waitEleNotPresents(DP.CUSTOMIZEMENUFINISHMORE) and \
-                           self.checkCutomizePageData(data,module["name"],check1="titleName",randomCount=data_length)
+            if hasMore:
+                moduleId = module["moduleId"]
+                menuId = module["menuId"]
+                result = appHomeMenuModuleMore(menuId, moduleId)
+                if result:
+                    if self.swipeUpUntilSubEleDisplay((DP.CUSTOMIZEMENUMODULE[0],DP.CUSTOMIZEMENUMODULE[1] % module["name"]),DP.MOREDATAPREDICATE):
+                        if self.clickChildEle((DP.CUSTOMIZEMENUMODULE[0],DP.CUSTOMIZEMENUMODULE[1] % module["name"]),DP.MOREDATAPREDICATE):
+                            if self.checkPageData(result,check1="titleName"):
+                                if self.getBack():
+                                    return self.checkCutomizeModulePageData(data, module["name"], check1="titleName", randomCount=1)
+                return False
+            else:
+                if self.waitEleNotPresents((DP.CUSTOMIZEMENUMODULEMORE[0],DP.CUSTOMIZEMENUMODULEMORE[1] % module["name"] )):
+                    return self.checkCutomizeModulePageData(data,module["name"],check1="titleName",randomCount=1)
                 else:
-                    return self.checkCutomizePageData(data,module["name"],check1="titleName",randomCount=data_length)
-            elif type == 2:
-                if data_length == 6:
-                    return self.waitEleNotPresents(DP.CUSTOMIZEMENUFINISHMORE) and \
-                           self.checkCutomizePageData(data,module["name"],check1="titleName",randomCount=data_length)
-                else:
-                    return self.checkCutomizePageData(data,module["name"],check1="titleName",randomCount=data_length)
-
+                    return False
 
     def checkMenusPage(self):
         menus = self.menus
@@ -882,13 +972,9 @@ class DiscoveryPageAction(BasePageAction):
             if name == "推荐":
                 continue
             if self.getInDiscoveryXXPage(name):
-                self.defaultPage = True
                 if self.checkMenusDetail(menu):
                     result+=1
-                else:
-                    return False
-            else:
-                return False
+        logger.info("checkMenusPage: %s == %s ?" % (result,len(menus)-1))
         if result == len(menus)-1:
             return True
         else:
@@ -900,20 +986,22 @@ class DiscoveryPageAction(BasePageAction):
         type = menu["type"]
         banners = detail["bannerList"]
         moduleList = detail["moduleList"]
-        # genrePosition = detail["genrePosition"]
-        finishedTitlePosition = detail["finishedTitlePosition"]
         if self.checkCustomizeMenuBanner(banners):
             if type == "GENRE":
+                # genrePosition = detail["genrePosition"]
+                finishedTitlePosition = detail["finishedTitlePosition"]
                 moduleList.insert(0,{"genrePosition":{"genreName":menu["genreName"]}})
                 moduleList.insert(finishedTitlePosition,{"finishedTitlePosition":{"genreName":menu["genreName"]}})
             for module in moduleList:
                 if self.checkMenusDetailByModule(module):
                     result += 1
+            logger.info("checkMenusDetail: %s == %s ?" % (result,len(moduleList)))
             if result == len(moduleList):
                 return True
             else:
                 return False
         else:
+            logger.error("checkCustomizeMenuBanner失败")
             return False
 
 
@@ -921,7 +1009,7 @@ class DiscoveryPageAction(BasePageAction):
         if module.get("genrePosition",None):
             return self.checkCustomizeMenuGenreRank(module["genrePosition"]["genreName"])
         elif module.get("finishedTitlePosition",None):
-            return self.checkCustomizeMenuFinish(module["genrePosition"]["genreName"])
+            return self.checkCustomizeMenuFinish(module["finishedTitlePosition"]["genreName"])
         else:
             return self.checkCustomizeMenuList(module)
 
@@ -979,7 +1067,7 @@ class DiscoveryPageAction(BasePageAction):
                     self.getInSearchBtn()
                     if self.checkTitleList(titleNo):
                         result+=1
-                        self.getBackFromList()
+                        # self.getBackFromList()
                     else:
                         return False
                 else:

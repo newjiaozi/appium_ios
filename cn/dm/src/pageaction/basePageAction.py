@@ -170,8 +170,6 @@ class BasePageAction():
             return False
 
 
-
-
     def clickChildEle(self,fatherloc,loc,seconds=5,poll_frequency=1):
         logger.info("获取%s的子元素%s" % (str(fatherloc),str(loc)))
         ele = self.waitElePresents(fatherloc,seconds,poll_frequency)
@@ -278,6 +276,7 @@ class BasePageAction():
         try:
             ele = WebDriverWait(self.driver,seconds,poll_frequency=poll_frequency).until(EC.element_to_be_clickable(loc))
             ele.click()
+            # self.tapXY(ele)
             logger.info("执行waitEleClick成功,%s" % str(loc))
             return True
         except TimeoutException:
@@ -388,7 +387,11 @@ class BasePageAction():
                     jump,genre = self.getRandomGenre()
                     for i in genre:
                         ele = self.waitElePresents(i)
-                        self.tapXY(ele)
+                        if ele:
+                            self.tapXY(ele)
+                        else:
+                            jump = 1
+                            break
                     if jump == 1:
                         ele = self.waitElePresents(BP.USERPREFENRENCEJUMP)
                         self.tapXY(ele)
@@ -668,7 +671,6 @@ class BasePageAction():
     def ifHasNavigator(self):
         return self.waitElePresents(BP.MOONICON,seconds=2)
 
-
     def navigatorOn(self,times=0,waitTime=5,loading=False):
         logger.info("navigatorOn等待导航栏出现")
         if loading:
@@ -741,18 +743,19 @@ class BasePageAction():
 
     def getBackFromViewer(self,times=0):
         logger.info("执行getBackFromViewer")
-        if times >=3:
-            return False
-        try:
-            if self.waitEleClick(BP.VIEWERBACK,seconds=2):
-                pass
-            else:
-                self.tapByXY(self.width / 2, self.height / 2)
-                return self.getBackFromViewer(times)
-        except ElementNotVisibleException:
-            times += 1
-            self.tapByXY(self.width / 2, self.height / 2)
-            return self.getBackFromViewer(times)
+        # if times >=3:
+        #     return False
+        # try:
+        #     if self.waitEleClick(BP.VIEWERBACK,seconds=2):
+        #         pass
+        #     else:
+        #         self.tapByXY(self.width / 2, self.height / 2)
+        #         return self.getBackFromViewer(times)
+        # except ElementNotVisibleException:
+        #     times += 1
+        #     self.tapByXY(self.width / 2, self.height / 2)
+        #     return self.getBackFromViewer(times)
+        return self.getBackFromViewerByTapXY()
 
     def getBackFromViewerByTapXY(self):
         logger.info("getBackFromViewerByTapXY")
@@ -877,14 +880,40 @@ class BasePageAction():
 
     def swipeLeftByEleLocation(self,loc,ele,startTimes=0,maxTimes=50):
         if startTimes >= maxTimes:
+            logger.info("元素不可见，超过了尝试最大次数%s" % maxTimes)
             return False
         if self.waitEleVisiable(loc,seconds=1):
+            logger.info("元素可见：%s" % str(loc))
             return True
         else:
             startTimes+=1
-            location = self.getXY(ele,center=False)
-            self.scrollSlow(location["x"]+3*location["width"]/4,location["y"]+location["height"]/2,0,location["y"]+location["height"]/2)
+            logger.info("元素不可见，尝试第%s次" % startTimes)
+            location = self.getXY(ele)
+            self.scrollSlow(location[0]+100,location[1],0,location[1],who="swipeLeftByEleLocation")
             return self.swipeLeftByEleLocation(loc,ele,startTimes,maxTimes)
+
+
+
+    def swipeLeftByFatherLoc(self,ele,loc,startTimes=0,maxTimes=50):
+        subele = self.findSubElement(ele,loc)
+        if subele:
+            if startTimes >= maxTimes:
+                logger.info("尝试次数：%s，退出尝试" % maxTimes)
+                return False
+            if subele.is_displayed():
+                logger.info("元素可见：%s" % str(loc))
+                return True
+            else:
+                startTimes+=1
+                logger.info("元素%s第%s次不可见" % (str(loc),startTimes))
+                location = self.getXY(ele)
+                self.scrollSlow(location[0] + 100, location[1], 0, location[1], who="swipeLeftByFatherLoc")
+                return self.swipeLeftByFatherLoc(ele,loc,startTimes,maxTimes)
+        else:
+            return False
+
+
+
 
 
     def swipeUpUntilDisplayHalf(self,loc,startTimes=0,maxTimes=50):
@@ -1006,7 +1035,7 @@ class BasePageAction():
 
 
     ##### 需要几个通用的viewer和list，简介，预览，底部弹窗的方法（区分viewer类型）
-    def checkTitleList(self,titleNo,randomCount=3):
+    def checkTitleList(self,titleNo,randomCount=1):
         if self.checkTitleTopBottomViewer(titleNo):
             title = self.getTitleFromList2(titleNo)
             episode_list = appEpisodeListV3(titleNo)
@@ -1023,7 +1052,7 @@ class BasePageAction():
 
 
 
-    def checkTitleListData(self, data,viewerType, randomCount=3,maxTimes = 10):
+    def checkTitleListData(self, data,viewerType, randomCount=1,maxTimes = 10):
         data_length = len(data)
         if data_length < randomCount:
             randomData = self.getRandomInts(data_length, data_length,reverse=True)
@@ -1083,11 +1112,12 @@ class BasePageAction():
         res2 = self.eleVisiable(BP.SHARE)
         titleInfo = appTitleInfo2(titleNo)
         if titleInfo:
-            if titleNo not in self.cache:
+            if self.checkCache(titleNo):
                 bottomEpisode = titleInfo["firstEpisodeTitle"]
                 bottomName = "开始阅读"
             else:
-                episodeInfo = appEpisodeInfoV3(titleNo,self.cache[titleNo][1])
+                # episodeInfo = appEpisodeInfoV3(titleNo,self.cache[titleNo][1])
+                episodeInfo = appEpisodeInfoV3(titleNo,self.getCache(titleNo)[1])
                 bottomEpisode = episodeInfo["episodeTitle"]
                 bottomName = "继续阅读"
             res3 = self.getChildEleDisplay((BP.LISTBOTTOMID[0], BP.LISTBOTTOMID[1]),(BP.IDTOBE[0],BP.IDTOBE[1] % bottomEpisode))
@@ -1111,6 +1141,7 @@ class BasePageAction():
     def getTitleFromList2(self,titleNo=""):
         if titleNo:
             try:
+                titleNo = int(titleNo)
                 title= self.data[titleNo]
                 logger.info("getTitleFromList2获取的作品为：%s" % title["title"])
                 return title
@@ -1132,13 +1163,16 @@ class BasePageAction():
         logger.info("添加阅读记录addCache,%s" % titleNo)
         logger.info(self.cache.keys())
 
-    def getCache(self):
-        cache_list = sorted(self.cache.items(),key=lambda x:x[1][3],reverse=True)
-        cache_dict = dict(cache_list)
-        logger.info("getCache获取到的历史记录：")
-        logger.info(cache_dict.keys())
-        return cache_dict
-
+    def getCache(self,keyTitleNo=""):
+        if keyTitleNo:
+            keyTitleNo = int(keyTitleNo)
+            return self.cache.get(keyTitleNo,None)
+        else:
+            cache_list = sorted(self.cache.items(),key=lambda x:x[1][3],reverse=True)
+            cache_dict = dict(cache_list)
+            logger.info("getCache获取到的历史记录：")
+            logger.info(cache_dict.keys())
+            return cache_dict
 
 
     #条漫
@@ -1206,22 +1240,25 @@ class BasePageAction():
                 return self.getBackFromViewerByTapXY()
 
     def tapByImageInfos(self,titleNo,episodeNo,episodeInfo):
+        # slow_times = 0 ##两次点击之前的时间特别慢，达到5次，就不tap了?
         title = self.getTitleFromList2(titleNo)
         imageInfos = episodeInfo["imageInfo"]
         logger.info("viewer阅读页_tapByImageInfos:%s_%s_%s_%s_开始" % (title["title"],titleNo,episodeInfo["episodeTitle"],episodeNo))
         imageCount,imageHeight = self.getImageHeight(imageInfos,self.width)
         scaleTimes = (imageHeight-self.height)/(2*self.height/3)
         scrollTimes = int(scaleTimes)
+        logger.info("tapByImageInfos应该滚动%s次" % scrollTimes)
         floatTimes =  scaleTimes-scrollTimes
-        x,y = self.width/2,3*self.height/4
-        for i in range(0,scrollTimes):
-            self.tapByXY(x,y)
-            self.sleep(0.2)
-        self.scrollSlow(self.width/6,floatTimes*(2*self.height/3),self.width/6,0,1800,who="tapByImageInfos_按照计算次数滚动")
-        self.scrollSlow(self.width/6,self.height/8,self.width/6,0,1800,who="tapByImageInfos_滚动1/8屏幕")
-        self.savePNG(title["title"],episodeNo,"末尾")
-        logger.info("viewer阅读页_tapByImageInfos:%s_%s_%s_%s_结束" % (title["title"],titleNo,episodeInfo["episodeTitle"],episodeNo))
-        return True
+        if self.tapReadTitle(scrollTimes):
+            self.scrollSlow(self.width/6,floatTimes*(2*self.height/3),self.width/6,0,1800,who="tapByImageInfos_按照计算次数滚动")
+            self.scrollSlow(self.width/6,self.height/8,self.width/6,0,1800,who="tapByImageInfos_滚动1/8屏幕")
+            self.savePNG(title["title"],episodeNo,"末尾")
+            logger.info("viewer阅读页_tapByImageInfos:%s_%s_%s_%s_结束" % (title["title"],titleNo,episodeInfo["episodeTitle"],episodeNo))
+            return True
+        else:
+            self.savePNG(title["title"],episodeNo,"中断")
+            logger.info("viewer阅读页_tapByImageInfos:%s_%s_%s_%s_中断" % (title["title"],titleNo,episodeInfo["episodeTitle"],episodeNo))
+            return True
 
 
     def tapByImageHeightPreview(self,titleNo,episodeNo,loc):
@@ -1233,18 +1270,21 @@ class BasePageAction():
             scaleTimes = (imageHeight-self.height)/(2*self.height/3)
             scrollTimes = int(scaleTimes)
             floatTimes =  scaleTimes-scrollTimes
-            # print(width,height,imageCount,imageHeight,scrollTimes)
-            x,y = self.width/2,3*self.height/4
             logger.info("预览阅读页_tapByImageHeightPreview:%s_%s_%s_开始" % (title["title"],titleNo,episodeInfo["episodeTitle"]))
-            for i in range(0,scrollTimes+1):
-                self.tapByXY(x,y)
-                self.sleep(0.2)
-            self.scrollSlow(self.width/6,floatTimes*(2*self.height/3),self.width/6,0,1800)
-            if self.swipeUpUntilDisplay(loc):
-                logger.info("预览阅读页_tapByImageHeightPreview:%s_%s_%s_结束" % (title["title"], titleNo, episodeInfo["episodeTitle"]))
-                return True
+            logger.info("应该TAP %s次" % scrollTimes)
+            if self.tapReadTitle(scrollTimes,plusTimes=2):
+                self.scrollSlow(self.width/6,floatTimes*(2*self.height/3),self.width/6,0,1800,who="tapByImageHeightPreview")
+                if self.swipeUpUntilDisplay(loc):
+                    self.savePNG(title["title"], episodeNo, "结束","预览阅读页")
+                    logger.info("预览阅读页_tapByImageHeightPreview:%s_%s_%s_结束" % (title["title"], titleNo, episodeInfo["episodeTitle"]))
+                    return True
+                else:
+                    return False
             else:
-                return False
+                self.savePNG(title["title"], episodeNo, "中断","预览阅读页")
+                logger.info("预览阅读页_tapByImageHeightPreview:%s_%s_%s_中断" % (title["title"], titleNo, episodeInfo["episodeTitle"]))
+                return True
+
         else:
             logger.error("tapByImageHeightPreview失败")
             if self.noNetClose(title["title"], episodeNo):
@@ -1319,15 +1359,15 @@ class BasePageAction():
         title = self.getTitleFromList2(titleNo)
         viewerType = title.get("viewer", None)
         if history:
-            cacheTitle = self.cache.get(titleNo,None)
+            cacheTitle = self.getCache(titleNo)
             if cacheTitle:
                 if viewerType == "CUT":
-                    logger.info("checkViewer：%s_%s_%s" % (title["title"],titleNo,episodeNo))
-                    self.savePNG("最近观看",title["title"],episodeNo)
+                    logger.info("checkViewer：%s_%s_%s" % (title["title"],titleNo,cacheTitle[1]))
+                    self.savePNG("书签章节",title["title"],cacheTitle[1])
                     return self.getBackFromCutViewer()
                 else:
-                    logger.info("checkViewer：%s_%s_%s" % (title["title"],titleNo,episodeNo))
-                    self.savePNG("最近观看",title["title"],episodeNo)
+                    logger.info("checkViewer：%s_%s_%s" % (title["title"],titleNo,cacheTitle[1]))
+                    self.savePNG("书签章节",title["title"],episodeNo)
                     return self.getBackFromViewer()
             else:
                 if viewerType == "SCROLL":
@@ -1339,28 +1379,39 @@ class BasePageAction():
                 elif viewerType == "ACTIVITYAREA":
                     return self.checkActivityViewer(titleNo,1)
         else:
-            if viewerType == "SCROLL":
-                logger.info('viewerType == "SCROLL"')
-                return self.checkScrollViewer(titleNo,episodeNo)
-            elif viewerType == "MOTION":
-                logger.info('viewerType == "MOTION"')
-                return self.checkScrollViewer(titleNo,episodeNo)
-            elif viewerType == "CUT":
-                logger.info('viewerType == "CUT"')
-                return self.checkCutViewer(titleNo,episodeNo)
-            elif viewerType == "ACTIVITYAREA":
-                logger.info('viewerType == "ACTIVITYAREA"')
-                return self.checkActivityViewer(titleNo,episodeNo)
-
+            # cacheTitle = self.cache.get(titleNo,None)
+            cacheTitle = self.getCache(titleNo)
+            if cacheTitle and cacheTitle[1] == episodeNo:
+                if viewerType == "CUT":
+                    logger.info("checkViewer：%s_%s_%s" % (title["title"],titleNo,episodeNo))
+                    self.savePNG("请求章节与书签章节一致",title["title"],episodeNo)
+                    return self.getBackFromCutViewer()
+                else:
+                    logger.info("checkViewer：%s_%s_%s" % (title["title"],titleNo,episodeNo))
+                    self.savePNG("请求章节与书签章节一致",title["title"],episodeNo)
+                    return self.getBackFromViewer()
+            else:
+                if viewerType == "SCROLL":
+                    logger.info('viewerType == "SCROLL"')
+                    return self.checkScrollViewer(titleNo,episodeNo)
+                elif viewerType == "MOTION":
+                    logger.info('viewerType == "MOTION"')
+                    return self.checkScrollViewer(titleNo,episodeNo)
+                elif viewerType == "CUT":
+                    logger.info('viewerType == "CUT"')
+                    return self.checkCutViewer(titleNo,episodeNo)
+                elif viewerType == "ACTIVITYAREA":
+                    logger.info('viewerType == "ACTIVITYAREA"')
+                    return self.checkActivityViewer(titleNo,episodeNo)
 
     ##需要确认跳预览还是viewer，通过查看历史数据
     def checkGetInViewerOrPreview(self,titleNo,episodeNo=1):
         title = self.getTitleFromList2(titleNo)
         viewerType = title.get("viewer", None)
-        if (viewerType == "SCROLL" or "MOTION") and titleNo not in self.cache:
+        if (viewerType == "SCROLL" or "MOTION") and not self.checkCache(titleNo):
             return self.checkPreview(titleNo)
-        elif titleNo in self.cache:
-            return self.checkViewer(titleNo,episodeNo)
+        elif self.checkCache(titleNo):
+            return self.checkViewer(titleNo,episodeNo,history=True)
         else:
             return self.checkViewer(titleNo,episodeNo,False)
 
@@ -1669,35 +1720,31 @@ class BasePageAction():
         logger.info("getRandomGenre：%s" % str(result))
         return jump,result
 
-    def checkPageWebtoonData(self,data,randomCount=3):
+    def checkPageWebtoonData(self,data,randomCount=1):
         data_length = len(data)
         if data_length < randomCount:
             randomData = self.getRandomInts(data_length, data_length)
         else:
             randomData = self.getRandomInts(data_length,randomCount)
         count = 0
-        res3 = False
         for i in range(0,data_length):
             # likeText = self.handleTitleLikeCount(data[i]["webtoon"]["likeitCount"])
             # print(likeText)
-            res1 = self.swipeUpUntilDisplay((BP.IDTOBE[0],BP.IDTOBE[1] % data[i]["webtoon"]["title"]),maxTimes=10)
+
             # res2 = self.swipeUpUntilDisplay((DP.IDTOBE[0],DP.IDTOBE[1] % likeText),maxTimes=10)
             if i in randomData:
-                if self.waitEleClick((BP.IDTOBE[0],BP.IDTOBE[1] % data[i]["webtoon"]["title"])):
-                    res3 = self.checkGetInViewerOrPreview(data[i]["webtoon"]["titleNo"])
-                else:
-                    res3 = False
-            if res1:
-                count+=1
-            else:
-                return False
+                if self.swipeUpUntilDisplay((BP.IDTOBE[0], BP.IDTOBE[1] % data[i]["webtoon"]["title"]), maxTimes=20):
+                    if self.waitEleClick((BP.IDTOBE[0],BP.IDTOBE[1] % data[i]["webtoon"]["title"])):
+                        if self.checkGetInViewerOrPreview(data[i]["webtoon"]["titleNo"]):
+                            count+=1
+
         if count == len(randomData):
-            return res3
+            return True
         else:
             return False
 
     ##只会进入viewer，没有预览的可能，只进入第一话（大家都在看用）
-    def checkPageWebtoonDataViewer(self,data,randomCount=3,addFavourite=False,addComment=False,downloadEpisode=False):
+    def checkPageWebtoonDataViewer(self,data,randomCount=1,addFavourite=False,addComment=False,downloadEpisode=False):
         data_length = len(data)
         if data_length < randomCount:
             randomData = self.getRandomInts(data_length, data_length)
@@ -1766,18 +1813,29 @@ class BasePageAction():
     def handlePickerWheelValue(self,loc,times=0,dest="1"):
         if times>10:
             logger.error("handlePickerWheelValue次数过多，%s次" % times)
-            return False
+            # return False
+            ##因为获取不到text执行，10次之后返回True
+            return True
         ele = self.waitElePresents(loc)
         if ele:
-            if ele.text == str(dest):
-                logger.info("handlePickerWheelValue成功")
-                return True
+            ele_text = ele.text
+            if ele_text:
+                if ele_text == str(dest):
+                    logger.info("handlePickerWheelValue成功")
+                    return True
+                else:
+                    x,y = self.getXY(ele)
+                    self.scrollSlow(x,y,x,self.height,duration=200,who="handlePickerWheelValue")
+                    time.sleep(2)
+                    times+=1
+                    logger.info("handlePickerWheelValue第%s次失败，dest为%s,当前text为：%s" % (times,dest,ele_text))
+                    return self.handlePickerWheelValue(loc,times,dest)
             else:
-                x,y = self.getXY(ele)
-                self.scrollSlow(x,y,x,self.height,duration=200,who="handlePickerWheelValue")
-                times+=1
-                logger.info("handlePickerWheelValue第%s次失败" % times)
-                return self.handlePickerWheelValue(loc,times,dest)
+                x, y = self.getXY(ele)
+                self.scrollSlow(x, y, x, self.height, duration=200, who="handlePickerWheelValue")
+                times += 1
+                logger.info("handlePickerWheelValue第%s次失败，dest为%s,当前text为：%s" % (times, dest, ele_text))
+                return self.handlePickerWheelValue(loc, times, dest)
         else:
             logger.error("handlePickerWheelValue失败，获取元素失败%s" % str(loc))
             return False
@@ -1876,7 +1934,14 @@ class BasePageAction():
 
     def loginByPassNotLoginPage(self,user,passwd,successText="登录成功"):
         self.swith2PassLogin(seconds=2)
+        ele_account = self.waitElePresents(BP.INPUTUSERACCOUNT)
+        ele_accountx, ele_accounty = self.getXY(ele_account)
+        self.tapByXY(ele_accountx + 50, ele_accounty)
         self.waitElePresents(BP.INPUTUSER).send_keys(user)
+
+        # ele_password = self.waitElePresents(MP.INPUTUSERPASSWORD)
+        # ele_passwordx,ele_passwordy = self.getXY(ele_password)
+        # self.tapByXY(ele_passwordx+50,ele_passwordy)
         self.waitElePresents(BP.INPUTPASS).send_keys(passwd)
         logger.info("点击【登录】")
         if self.waitEleClick(BP.LOGINCONFIRM):
@@ -1909,6 +1974,34 @@ class BasePageAction():
         logger.info("getRandomTitle获取的随机titleNo为%s" % titleNo)
         return titleNo
 
+    def getNowDatetime(self):
+        return datetime.datetime.now()
+
+    def getDiffSeconds(self,a,b):
+        return (b-a).seconds
+
+
+    def tapReadTitle(self,scrollTimes,plusTimes=1):
+        slowTimes = 0
+        breakFlag = False
+        x, y = self.width / 2, 3 * self.height / 4
+        for i in range(1, scrollTimes + plusTimes):
+            starttime = self.getNowDatetime()
+            self.tapByXY(x, y)
+            self.sleep(0.2)
+            logger.info("TAP >> %s次" % i)
+            endtime = self.getNowDatetime()
+            if self.getDiffSeconds(starttime, endtime) > 5:
+                slowTimes += 1
+                logger.info("TAP时间超过5秒，超时次数为：%s" % slowTimes)
+            if slowTimes > 2:
+                logger.info("TAP速度太慢，超时次数超过2次，退出处理")
+                breakFlag = True
+                break
+        if breakFlag:
+            return False
+        else:
+            return True
 
 
 if __name__ == "__main__":
