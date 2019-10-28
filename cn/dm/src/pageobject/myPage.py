@@ -66,7 +66,7 @@ class MyPage(BasePage):
 
     ##账号管理
     ACCOUNTTITLE = (By.ACCESSIBILITY_ID,"账号管理")
-    ACCOUNTNICKNAMEMOBILE = (By.ACCESSIBILITY_ID,"手机账号")
+    ACCOUNTNICKNAMEMOBILE = (By.IOS_PREDICATE,"type == 'XCUIElementTypeStaticText' and value ENDSWITH '手机账号'")
     ACCOUNTNICKNAMEEMAIL = (By.ACCESSIBILITY_ID,"邮箱账号")
     ACCOUNTNICKNAMEWEIXIN = (By.ACCESSIBILITY_ID,"微信账号")
     ACCOUNTNICKNAMEWEIBO = (By.ACCESSIBILITY_ID,"微博账号")
@@ -147,3 +147,28 @@ class MyPage(BasePage):
 
     ##APP信息
     APPHELP = (By.ACCESSIBILITY_ID,"帮助")
+
+
+
+    ##一键登录
+    ONEKEYLOGIN = (By.ACCESSIBILITY_ID,"一键登录")
+    ONEEXCHANGEACCOUNT = (By.ACCESSIBILITY_ID,"切换账号")
+    ONEKEYLOGINCLOSE = (By.ACCESSIBILITY_ID,"viewer recmd close")
+    ONEYINSI = (By.ACCESSIBILITY_ID,"隐私政策")
+    ONEUSERSERVICERULE= (By.ACCESSIBILITY_ID,"用户服务协议")
+    ONEUNIFORMYINSI = (By.ACCESSIBILITY_ID,"中国联通服务与隐私协议条款")
+    ONEMOBILEYINSI = (By.ACCESSIBILITY_ID,"")
+    ONETELECOMYINSI = (By.ACCESSIBILITY_ID,"")
+    ONEH5BACK = (By.ACCESSIBILITY_ID,"privacyWebBackBtnImage")
+    ONEUNIFORMH5BAR  = (By.IOS_PREDICATE,'type == "XCUIElementTypeNavigationBar" and name == "中国联通服务与隐私协议条款"')
+    ONEUSERRULESH5BAR  = (By.IOS_PREDICATE,'type == "XCUIElementTypeNavigationBar" and name == "用户服务协议"')
+    ONEYINSIH5BAR  = (By.IOS_PREDICATE,'type == "XCUIElementTypeNavigationBar" and name == "隐私政策"')
+
+
+
+    ##一键登录快捷
+    ONEKEYQUICKCLOSE = (By.ACCESSIBILITY_ID,"invalidLogin")
+    ONEUNIFORMNUMBER = (By.ACCESSIBILITY_ID,"131****1059")
+    ONEUNIFORMNICKNAME  = (By.ACCESSIBILITY_ID,"咚宝A1队3261号")
+    ONEOTHERLOGINID = (By.ACCESSIBILITY_ID,"其他方式登录")
+    ONEQUICKLOGINID = (By.ACCESSIBILITY_ID,"快捷登录")

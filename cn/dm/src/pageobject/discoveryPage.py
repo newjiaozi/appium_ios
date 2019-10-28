@@ -19,7 +19,7 @@ class DiscoveryPage(BasePage):
 
     # SEARCH = (By.ACCESSIBILITY_ID,"search") ##搜索图标
     BIGBANNER = (By.IOS_PREDICATE,"type == 'XCUIElementTypeImage' and name BEGINSWITH 'TopBanner'") ## banner scroll
-    BIGBANNERFORMAT = [By.IOS_PREDICATE,"type == 'XCUIElementTypeImage' and name == '%s'"] ## banner scroll
+    BIGBANNERFORMAT = [By.IOS_PREDICATE,"type == 'XCUIElementTypeImage' and name == 'TopBanner%s'"] ## banner scroll
     # BIGBANNERPARENT = (By.XPATH,'//XCUIElementTypeImage[@name="TopBanner5"]')
     # NEWTITLE = (By.ACCESSIBILITY_ID,"新作") ## 新作
     RANK = (By.IOS_PREDICATE,"type == 'XCUIElementTypeButton' and name == '排行'") ## 排行

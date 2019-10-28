@@ -146,13 +146,13 @@ def appHome4(weekday="MONDAY"):
             result["like"] = resulttmp["recommend_map_list"]
             return result
         else:
-            logger.error(resp.url)
+            # logger.error(resp.url)
             logger.error(resp.text)
             return False
 
     except Exception:
-        logger.error(resp.url)
-        logger.error(resp.text)
+        # logger.error(resp.url)
+        logger.exception(resp.text)
         return False
 
 
@@ -772,9 +772,9 @@ def deleteRedis(neo_id):
     k = r.keys(pattern=pattern)
     if k:
         r.delete(*k)
-        print("redis删除成功 %s" % k)
+        logger.info("redis删除成功 %s" % k)
     else:
-        print("没有匹配到需要删除的redis")
+        logger.info("没有匹配到需要删除的redis")
 
 ### 点赞章节
 def likeIt(titleNo,episodeNo,like=True):
@@ -891,8 +891,8 @@ def appEpisodeInfoV3(titleNo,episodeNo,purchase=0,v=10):
         # logger.info(result)
         return result
     except Exception:
-        logger.info(resp.url)
-        logger.info(resp.text)
+        logger.exception(resp.url)
+        logger.exception(resp.text)
         logger.exception("执行appEpisodeInfoV3异常")
 
 
@@ -1227,7 +1227,7 @@ def testingConfigInfo(version="2.2.4"):
     payload.update(getExpiresMd5(path))
     payload.update({"version":version})
     try:
-        resp = requests.get("https://qaapis02.dongmanmanhua.cn" + path, params=payload, headers=Config("headers"),cookies={"uuid":getUUID()})
+        resp = requests.get("https://qaptsapis.dongmanmanhua.cn" + path, params=payload, headers=Config("headers"),cookies={"uuid":getUUID()})
         if resp.ok:
             logger.info(resp.url)
             result = resp.json()["message"]["result"]["data"]["oneKeyLogin"]
@@ -1307,12 +1307,12 @@ if __name__=="__main__":
     # transArgs(1)
     # print(appClientVersion(),type(appClientVersion()))
     # print(v1TitleEpisodeLikeCount(1268,[76,75,74,72,73]))
-    # trueCount = 0
-    # totalCount = 100
-    # for i in range(0,totalCount):
-    #     res = testingConfigInfo("2.2.3")
-    #     if res:
-    #         trueCount+=1
-    # print("执行%s次，返回true %s次" % (totalCount,trueCount))
+    trueCount = 0
+    totalCount = 1000
+    for i in range(0,totalCount):
+        res = testingConfigInfo("2.2.4")
+        if res:
+            trueCount+=1
+    print("执行%s次，返回true %s次" % (totalCount,trueCount))
     # testingConfigInfo()
-    print(appHome4())
+    # print(appHome4())

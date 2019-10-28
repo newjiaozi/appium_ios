@@ -14,6 +14,7 @@ class BasePage():
     UPDATENEXT = (By.ACCESSIBILITY_ID,"下次再说")
     BTNBACK = (By.ACCESSIBILITY_ID,"btnBack")
     SYSALLOW = (By.ACCESSIBILITY_ID,"允许")
+    SYSALLOWEN = (By.ACCESSIBILITY_ID,"Allow")
     SYSCONFIRM = (By.ACCESSIBILITY_ID,"确定")
     H5CLOSE = (By.ACCESSIBILITY_ID,"Close")
     FIRSTCLOSE = (By.IOS_PREDICATE,"type == 'XCUIElementTypeButton' and name == 'Close' and label == 'Close'") ##首次安装app启动的关闭
@@ -112,9 +113,9 @@ class BasePage():
     DOWNLOADPICKERWHEEL= (By.CLASS_NAME,"XCUIElementTypePickerWheel")
     DOWNLOADPICKERWHEELFROM  = (By.XPATH,'//XCUIElementTypeApplication[@name="咚漫"]/XCUIElementTypeWindow[1]/XCUIElementTypeOther/XCUIElementTypeOther/XCUIElementTypeOther[3]/XCUIElementTypePicker[1]/XCUIElementTypePickerWheel')
     DOWNLOADPICKERWHEELTO  = (By.XPATH,'//XCUIElementTypePicker[2]/XCUIElementTypePickerWheel')
+    # DOWNLOADSTARTENDTITLENAME = [By.XPATH,'//XCUIElementTypeStaticText[@name="%s%s"]']
+    DOWNLOADSTARTENDTITLENAME = [By.IOS_PREDICATE,'type== "XCUIElementTypeStaticText" and name == "%s %s"']
     DOWNLOAD100 = (By.IOS_PREDICATE,'type== "XCUIElementTypeStaticText" and name ENDSWITH "%"')
-
-
 
     BACKRE = (By.IOS_PREDICATE,'type== "XCUIElementTypeButton" and name STARTSWITH "back"')
 

@@ -9,9 +9,6 @@ from bs4 import BeautifulSoup
 from cn.dm.src.logger import logger
 
 
-
-
-
 def deleteFiles(result_path):
     logger.info("移除目录下所有文件：%s" % result_path)
     for i in os.listdir(result_path):
@@ -46,12 +43,15 @@ def make_zip(source_dir="results",output_filename=r"results.zip"):
             zipf.write(pathfile, arcname)
     zipf.close()
 
-def sendMail(now_time="00",source="results",output=r"resultszip/results_%s.zip"):
+def sendMail(now_time="00",source="results",output="results_%s.zip"):
     '''
     'gjhpbxfvvuxhdhid'
     'dxnuqtwtnqngdjbi'
     '''
+
+    source = os.path.join(os.path.dirname(__file__),source)
     output = output % now_time
+    output = os.path.join(os.path.dirname(__file__),"resultszip",output)
     make_zip(source,output)
     sender = '2415824179@qq.com'
     toList = ['849781856@qq.com','liudonglin@dongmancorp.cn']

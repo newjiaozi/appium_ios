@@ -6,26 +6,44 @@ import rsa,binascii
 import uuid
 from cn.dm.src.logger import logger
 import configparser
+import faker
+from collections import OrderedDict
+from cn.dm.src.handleSqlite import getConfig as gc,updateConfig
+import os
+
+f = faker.Faker()
+
+def getUUID():
+    return "".join(str(uuid.uuid4()).split("-")).upper()
+
+def getIPV4():
+    return f.ipv4()
 
 
-def getConfig(section,option):
-    conf = configparser.ConfigParser()
-    conf.read("config.ini")
+def getConfig(section,option,ini="config.ini"):
+    config_path = os.path.join(os.path.dirname(__file__),ini)
+    conf = configparser.ConfigParser(dict_type=OrderedDict)
+    conf.read(config_path)
     if conf.has_option(section,option):
         return conf.get(section,option)
 
-def setConfig(section,option,value):
-    conf = configparser.ConfigParser()
-    conf.read("config.ini")
-    if conf.has_section(section):
-        pass
-    else:
-        conf.add_section(section)
-    conf.set(section,option,value)
-    conf.write(open("config.ini","r+"))
+def setConfig(section,option,value,ini="session.ini"):
+    try:
+        conf = configparser.ConfigParser(dict_type=OrderedDict)
+        conf.read(ini)
+        if conf.has_section(section):
+            pass
+        else:
+            conf.add_section(section)
+        conf.set(section,option,value)
+    except Exception:
+        logger.exception("setConfig错误")
+    finally:
+        conf.write(open(ini,"r+"))
+        time.sleep(5)
 
 def Config(key,section="headers"):
-    neo_ses = getConfig("session","neo_ses")
+    neo_ses = gc("neo_ses")
     host = getConfig(section,"host")
     httphost = getConfig(section,"httphost")
     phone_uuid = getConfig(section,"phone_uuid")
@@ -35,11 +53,14 @@ def Config(key,section="headers"):
     loginType = getConfig(section,"loginType")
     env = getConfig(section,"env")
     userAgent = getConfig(section,"userAgent")
+    ipv4 = gc("ipv4")
+    # ipv4 = getIPV4
+
 
     config = {"headers":{"Content-Type":"application/x-www-form-urlencoded; charset=UTF-8",
                          "HOST":host,
                          "Accept-Language":"zh-CN",
-                         # "x-Forwarded-For":"",
+                         "x-Forwarded-For":ipv4,
                          # "uuid":getUUID(),
                          "user-agent":userAgent
                          },
@@ -69,8 +90,7 @@ def Config(key,section="headers"):
         return config
 
 
-def getUUID():
-    return "".join(str(uuid.uuid4()).split("-")).upper()
+
 
 
 def getExpiresMd5(pathstr,skey="the_scret_key"):
@@ -127,13 +147,15 @@ def login(username,passwd,loginType="EMAIL"): ##PHONE_NUMBER
             resp_json = resp.json()
             logger.info(resp.url)
             neo_ses = resp_json["message"]["result"]["ses"]
-            setConfig("session","neo_ses",neo_ses)
+            neo_id = resp_json["message"]["result"]["id_no"]
+            updateConfig("neo_ses",neo_ses)
+            updateConfig("neo_id",neo_id)
             return neo_ses,resp_json["message"]["result"]["idNo"]
         except Exception:
-            logger.error("login出现异常")
+            logger.exception("login出现异常")
             logger.error(resp.url)
             logger.error(resp.text)
-            logger.error(resp.headers)
+            # logger.error(resp.headers)
             return False
     else:
         return False

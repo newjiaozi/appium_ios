@@ -238,3 +238,63 @@ class MyPageAction(BasePageAction):
 
 
 
+
+    ####一键登录方法
+
+    def tapOneKeyLogin(self):
+        if self.waitEleClick(MP.ONEKEYLOGIN):
+            if self.waitEleVisiable(MP.ONEUNIFORMNICKNAME):
+                return self.logout()
+        return False
+
+    def tapExchangeAccount(self):
+        if self.waitEleClick(MP.ONEEXCHANGEACCOUNT):
+            if self.waitEleVisiable(MP.TOPASSLOGIN):
+                return self.waitEleClick(MP.CLOSELOGIN)
+        return False
+
+    def tapOneKeyClose(self):
+        if self.waitEleClick(MP.ONEKEYLOGINCLOSE):
+            return self.waitEleVisiable(MP.ACCOUNTMANAGE)
+        return False
+
+    def tapUniformH5(self):
+        if self.waitEleClick(MP.ONEUNIFORMYINSI):
+            if self.waitEleVisiable(MP.ONEUNIFORMH5BAR):
+                if self.waitEleClick(MP.ONEH5BACK):
+                    return self.tapOneKeyClose()
+        return False
+
+    def tapYINSI(self):
+        if self.waitEleClick(MP.ONEYINSI):
+            if self.waitEleVisiable(MP.ONEYINSIH5BAR):
+                if self.waitEleClick(MP.ONEH5BACK):
+                    return self.tapOneKeyClose()
+        return False
+
+    def tapUserRules(self):
+        if self.waitEleClick(MP.ONEUSERSERVICERULE):
+            if self.waitEleVisiable(MP.ONEUSERRULESH5BAR):
+                if self.waitEleClick(MP.ONEH5BACK):
+                    return self.tapOneKeyClose()
+        return False
+
+
+
+    def tapOtherLogin(self):
+        if self.waitEleClick(MP.ONEOTHERLOGINID):
+            if self.waitEleVisiable(MP.TOPASSLOGIN):
+                return self.waitEleClick(MP.CLOSELOGIN)
+        return False
+
+    def tapCloseOneQuick(self):
+        if self.waitEleClick(MP.ONEKEYQUICKCLOSE):
+            if self.waitEleVisiable(MP.ACCOUNTMANAGE):
+                return True
+        return False
+
+    def tapOneQuickLogin(self):
+        if self.waitEleClick(MP.ONEQUICKLOGINID):
+            if self.waitEleVisiable(MP.ONEUNIFORMNICKNAME):
+                return self.logout()
+        return False

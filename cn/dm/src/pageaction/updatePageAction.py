@@ -183,12 +183,16 @@ class UpdagePageAction(BasePageAction):
     def getInUpdatePageSearch(self):
         return self.clickSearch()
 
-    def checkUpdatePageData(self,data,randomCount=3,maxTimes=10):
+    def checkUpdatePageData(self,data,randomCount=1,maxTimes=10):
         data_length = len(data)
+        if data_length > 30:
+            pass
+            data_length = 20
         if data_length < randomCount:
             randomData = self.getRandomInts(data_length,data_length)
         else:
             randomData = self.getRandomInts(data_length,randomCount)
+        # randomData = [27]
         count = 0
         for i in range(0,data_length):
             if i in randomData:

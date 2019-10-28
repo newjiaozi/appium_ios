@@ -3,42 +3,43 @@
 from cn.dm.src.testcases.baseTestcase import BaseTestcase
 import unittest
 
-from ..login import getConfig,Config
+from ..login import Config
+from ..handleSqlite import getConfig as gc
 
 
 class MyPageTestcase(BaseTestcase):
 
-    @unittest.skipIf(getConfig("skip","login") == "0","不能第三方登录")
+    @unittest.skipIf(gc("skip_login") == "0","不能第三方登录")
     def test002_loginByQQ(self):
         self.MPA.toDefaultPage()
         self.assertTrue(self.MPA.loginByQQ())
         self.assertTrue(self.MPA.logout())
 
-    @unittest.skipIf(getConfig("skip","login") == "0","不能第三方登录")
+    @unittest.skipIf(gc("skip_login") == "0","不能第三方登录")
     def test003_loginByQQQuick(self):
         self.MPA.toDefaultPage()
         self.assertTrue(self.MPA.loginByQQ(quick=True))
         self.assertTrue(self.MPA.logout())
 
-    @unittest.skipIf(getConfig("skip","login") == "0","不能第三方登录")
+    @unittest.skipIf(gc("skip_login") == "0","不能第三方登录")
     def test004_loginByWeibo(self):
         self.MPA.toDefaultPage()
         self.assertTrue(self.MPA.loginByWeibo())
         self.assertTrue(self.MPA.logout())
 
-    @unittest.skipIf(getConfig("skip","login") == "0","不能第三方登录")
+    @unittest.skipIf(gc("skip_login") == "0","不能第三方登录")
     def test005_loginByWeiboQuick(self):
         self.MPA.toDefaultPage()
         self.assertTrue(self.MPA.loginByWeibo(quick=True))
         self.assertTrue(self.MPA.logout())
 
-    @unittest.skipIf(getConfig("skip","login") == "0","不能第三方登录")
+    @unittest.skipIf(gc("skip_login") == "0","不能第三方登录")
     def test006_loginByWechat(self):
         self.MPA.toDefaultPage()
         self.assertTrue(self.MPA.loginByWechat())
         self.assertTrue(self.MPA.logout())
 
-    @unittest.skipIf(getConfig("skip","login") == "0","不能第三方登录")
+    @unittest.skipIf(gc("skip_login") == "0","不能第三方登录")
     def test007_loginByWechatQuick(self):
         self.MPA.toDefaultPage()
         self.assertTrue(self.MPA.loginByWechat(quick=True))

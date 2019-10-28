@@ -43,7 +43,7 @@ class DiscoveryPageAction(BasePageAction):
         self.waitEleClick(DP.TOTALRANK)
 
     def getInDiscoveryXXPage(self,xx="推荐"):
-        logger.info("进入%s页" % xx)
+        logger.info("进入【%s】页" % xx)
         return self.waitEleClick((DP.IDTOBE[0],DP.IDTOBE[1] % xx))
 
     def getInRecently(self):
@@ -127,28 +127,15 @@ class DiscoveryPageAction(BasePageAction):
                 if rankData:
                     if self.waitEleClick(DP.NEWRANKPAGE):
                         data = rankData["newrank"]
-                        res1 = self.checkRankPageData(data,1,rankType="new")
-                    else:
-                        return False
-
-                    if self.waitEleClick(DP.WEEKRANKPAGE):
-                        data = rankData["uprank"]
-                        res2 = self.checkRankPageData(data,1,rankType="week")
-                    else:
-                        return False
-                    if self.waitEleClick(DP.TOTALRANK):
-                        data = rankData["totalrank"]
-                        res3 = self.checkRankPageData(data,1,rankType="total")
-                    else:
-                        return False
-                    return res1 and res2 and res3
-                    # return res3
-                else:
-                    return False
-            else:
-                return False
-        else:
-            return False
+                        if self.checkRankPageData(data,1,rankType="new"):
+                            if self.waitEleClick(DP.WEEKRANKPAGE):
+                                data = rankData["uprank"]
+                                if self.checkRankPageData(data,1,rankType="week"):
+                                    if self.waitEleClick(DP.TOTALRANK):
+                                        data = rankData["totalrank"]
+                                        return self.checkRankPageData(data,1,rankType="total")
+        # self.savePNG("getInRankMoreFailed")
+        return False
 
 
     def checkRankPageData(self,data,randomCount=1,rankType="total"):
@@ -184,6 +171,7 @@ class DiscoveryPageAction(BasePageAction):
                                                       [(DP.IDTOBE[0], DP.IDTOBE[1] % data[i]["webtoon"]["title"])],
                                                       maxTimes=20)
                 else:
+                    # self.savePNG("checkRankPageData_Failed-A")
                     res1 = False
 
                 if res1:
@@ -194,6 +182,7 @@ class DiscoveryPageAction(BasePageAction):
         if count == len(randomData):
             return True
         else:
+            # self.savePNG("checkRankPageData_Failed-B")
             return False
 
 
@@ -340,12 +329,17 @@ class DiscoveryPageAction(BasePageAction):
 
     def getInBarBanner(self,seq=0):
         barbanner = self.home["barbanner"]
+        barbanner_length = len(barbanner)
         if seq == 0:
-            if self.swipeUpUntilDisplay(DP.BARBANNER0):
+            if barbanner_length < 1:
+                return True
+            elif self.swipeUpUntilDisplay(DP.BARBANNER0):
                 self.waitEleClick(DP.BARBANNER0)
                 return self.handleBanner(barbanner[0])
         else:
-            if self.swipeUpUntilDisplay(DP.BARBANNER1):
+            if barbanner_length < 2:
+                return True
+            elif self.swipeUpUntilDisplay(DP.BARBANNER1):
                 self.waitEleClick(DP.BARBANNER1)
                 return self.handleBanner(barbanner[1])
 
@@ -513,39 +507,48 @@ class DiscoveryPageAction(BasePageAction):
             return bigbanner and rank and dm and priority and newtitle and barbanner0 and barbanner1 and genre and theme and loginui and search and topbtn
 
 
+
+    def tapBigBanner(self,location,index=0):
+        if self.swipeLeftByEleLocationPresents((DP.BIGBANNERFORMAT[0],DP.BIGBANNERFORMAT[1] % index),location=location):
+            self.tapByXY(*location)
+            return True
+        return False
+
     def checkBigBanner(self):
         bigbanner = self.home["bigbanner"]
         bigbannerCount = len(bigbanner)
         logger.info("共有%s个 bigbanner" % bigbannerCount)
         resultCount = 0
-        alreadyCheck = []
+        # alreadyCheck = []
+        bigbannerBtn = self.waitElePresents(DP.BIGBANNER)
+        location = self.getXY(bigbannerBtn)
         for i in range(0,bigbannerCount):
-            bigbannerBtn = self.waitElePresents(DP.BIGBANNER)
-            name = bigbannerBtn.get_attribute("name")
-            logger.info("BIGBANNER:%s" % name)
-            if name:
-                index = int(name[-1])
-                if index in alreadyCheck:
+            if self.tapBigBanner(location,i):
+            # bigbannerBtn = self.waitElePresents(DP.BIGBANNER)
+            # name = bigbannerBtn.get_attribute("name")
+            # logger.info("BIGBANNER:%s" % name)
+            # if name:
+            #     index = int(name[-1])
+            #     if index in alreadyCheck:
+            #         resultCount+=1
+            #         # self.sleep(5)
+            #         continue
+            #     alreadyCheck.append(index)
+            # else:
+            #     resultCount += 1
+            #     # self.sleep(5)
+            #     continue
+            # # self.tapXY(bigbannerBtn)
+                if self.handleBanner(bigbanner[i]):
+                    logger.info("handleBanner成功:%s" % i)
                     resultCount+=1
-                    # self.sleep(5)
-                    continue
-                alreadyCheck.append(index)
-            else:
-                resultCount += 1
-                # self.sleep(5)
-                continue
-            self.tapByXY(self.width/2,self.height/4)
-            # self.tapXY(bigbannerBtn)
-            if self.handleBanner(bigbanner[index]):
-                logger.info("handleBanner成功:%s" % name)
-                resultCount+=1
-            else:
-                logger.info("handleBanner失败:%s" % name)
-            self.sleep(5)
+                else:
+                    logger.info("handleBanner失败:%s" % i)
+            # self.sleep(5)
+        logger.info("bigbannerCount:%s,resultCount:%s" % (bigbannerCount,resultCount))
         if bigbannerCount == resultCount:
             return True
         else:
-            logger.info("bigbannerCount:%s,resultCount:%s" % (bigbannerCount,resultCount))
             return False
 
     def swipeLeftBigBanner(self,loc,bannerSize,times=0):
