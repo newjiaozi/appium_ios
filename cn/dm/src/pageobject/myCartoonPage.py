@@ -43,6 +43,6 @@ class MyCartoonPage(BasePage):
     COMMENTEPISODENO = (By.IOS_PREDICATE,"type =='XCUIElementTypeStaticText' and value CONTAINS '#'")
     COMMENTUNLOGIN = (By.ACCESSIBILITY_ID,'若想查看评论，请先登录。')
     COMMENTDATA = "哇塞，这个太太太～～"
-    COMMENTDELETEICON = (By.IOS_PREDICATE,"type == 'XCUIElementTypeButton' and name BEGINSWITH '删除“'")
+    COMMENTDELETEICON = (By.IOS_PREDICATE,"type == 'XCUIElementTypeButton' and name BEGINSWITH '删除'")
     COMMENTDELETETEXT = (By.ACCESSIBILITY_ID,"删除")
 

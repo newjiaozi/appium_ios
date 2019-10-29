@@ -12,6 +12,8 @@ from cn.dm.src.logger import logger
 def deleteFiles(result_path):
     logger.info("移除目录下所有文件：%s" % result_path)
     for i in os.listdir(result_path):
+        if i == "test.log":
+            continue
         path_i = os.path.join(result_path,i)
         if os.path.isfile(path_i):
             os.remove(path_i)
@@ -19,13 +21,16 @@ def deleteFiles(result_path):
             deleteFiles(path_i)
 
 def deleteResultsFiles():
-    result_path = os.path.join(os.path.dirname(__file__), "results","screenshots")
+    result_path = os.path.join(os.path.dirname(__file__), "results")
+    # screenshots_path = os.path.join(os.path.dirname(__file__), "results","screenshots")
     resultszip_path = os.path.join(os.path.dirname(__file__), "resultszip")
     deleteFiles(result_path)
+    # deleteFiles(screenshots_path)
     deleteFiles(resultszip_path)
 
-def handleHtml(source="results"):
-    soup = BeautifulSoup(open(source+"/IOS测试报告.html","r"), "html.parser")
+def handleHtml(report_name):
+    result_path = os.path.join(os.path.dirname(__file__), "results","%s.html" % report_name)
+    soup = BeautifulSoup(open(result_path,"r"), "html.parser")
     a = soup.findAll("div",class_="popup_window")
     for i in a:
         i.extract()
@@ -33,7 +38,7 @@ def handleHtml(source="results"):
 
 
 
-def make_zip(source_dir="results",output_filename=r"results.zip"):
+def make_zip(source_dir,output_filename):
     zipf = zipfile.ZipFile(output_filename, 'w')
     pre_len = len(os.path.dirname(source_dir))
     for parent, dirnames, filenames in os.walk(source_dir):
@@ -43,7 +48,7 @@ def make_zip(source_dir="results",output_filename=r"results.zip"):
             zipf.write(pathfile, arcname)
     zipf.close()
 
-def sendMail(now_time="00",source="results",output="results_%s.zip"):
+def sendMail(now_time,report_name,source="results",output="results_%s.zip"):
     '''
     'gjhpbxfvvuxhdhid'
     'dxnuqtwtnqngdjbi'
@@ -59,7 +64,7 @@ def sendMail(now_time="00",source="results",output="results_%s.zip"):
     smtpserver = 'smtp.qq.com'
     # username = '木木'
     password = 'gjhpbxfvvuxhdhid'
-    mail_title = 'IOS自动化测试报告'
+    mail_title = report_name
 
     # 创建一个带附件的实例
     message = MIMEMultipart()
@@ -68,7 +73,7 @@ def sendMail(now_time="00",source="results",output="results_%s.zip"):
     message['Subject'] = Header(mail_title, 'utf-8')
 
     # 邮件正文内容
-    mail_html = handleHtml(source)
+    mail_html = handleHtml(report_name)
     message.attach(MIMEText('测试结果见报告', 'plain', 'utf-8'))
     message.attach(MIMEText(mail_html, 'html', 'utf-8'))
 
@@ -80,9 +85,9 @@ def sendMail(now_time="00",source="results",output="results_%s.zip"):
         smtp.login(sender, password)
         with open(output, 'rb') as f:
             # 这里附件的MIME和文件名
-            mime = MIMEBase('zip', 'zip', filename="测试报告附件")
+            mime = MIMEBase('zip', 'zip', filename=report_name)
             # 加上必要的头信息
-            mime.add_header('Content-Disposition', 'attachment', filename=('utf-8', '', "测试报告附件.zip"))
+            mime.add_header('Content-Disposition', 'attachment', filename=('utf-8', '', "%s.zip" % report_name))
             mime.add_header('Content-ID', '<0>')
             mime.add_header('X-Attachment-Id', '0')
             # 把附件的内容读进来
@@ -103,5 +108,5 @@ def sendMail(now_time="00",source="results",output="results_%s.zip"):
 
 if __name__ == "__main__":
     # make_zip()
-    sendMail()
+    sendMail(123,"IOS测试报告")
     # handleHtml()

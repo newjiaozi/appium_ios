@@ -785,7 +785,7 @@ class DiscoveryPageAction(BasePageAction):
         return self.swipeUpUntilSubEleDisplay(DP.NEWTITLEMORECELL,DP.MOREDATA,maxTimes=10)
 
     def checkMainGenreUI(self):
-        if self.swipeUpUntilSubEleDisplay(DP.THEMEMORECELL,DP.MOREDATAPREDICATE,maxTimes=10): ##等待主题出现
+        if self.swipeUpUntilSubEleDisplay(DP.GENREMORECELL,DP.MOREDATAPREDICATE,maxTimes=10): ##等待主题出现
             count=0
             for i in DP.GENREMAINPAGETEXT:
                 # if self.waitEleClick((DP.GENREMORETITLE[0],DP.GENREMORETITLE[1] % i)):

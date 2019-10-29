@@ -315,9 +315,10 @@ class BasePageAction():
                 i = str(i)
             args_list.append(i)
         name = "_".join(args_list)
-        _name = os.path.abspath(os.path.join(os.path.curdir,"results","screenshots", name+".png"))
+        _name = os.path.abspath(os.path.join(os.path.dirname(__file__),"..","results","screenshots", "%s.png" % name))
+        logger.info(_name)
         self.driver.get_screenshot_as_file(_name)
-        src = "screenshots\%s" % name+".png"
+        src = "screenshots\%s.png" % name
         print(r'''<br>''')
         print(r'''<img src="%(src)s"  alt="%(filename)s"  title="%(filename)s" height="%(height)s" width="%(width)s" class="pimg"  onclick="javascript:window.open(this.src);"/>%(filename)s''' % {'filename':name,"src":src,"height":self.height/2,"width":self.width/2})
         print(r'''<br>''')
@@ -821,9 +822,18 @@ class BasePageAction():
         logger.info("从列表返回，getBackFromList")
         return self.waitEleClick(BP.LISTBACK,seconds=2)
 
-    def closePreivewOrPopupDisplay(self):
-        self.tapByXY(self.width/2,self.height/2)
-        return self.waitEleClick(BP.PREVIEWCLOSE,seconds=2)
+    def closePreivewOrPopupDisplay(self, times=0, waitTime=5):
+        if times > waitTime:
+            logger.error("closePreivewOrPopupDisplay尝试超过最大次数%s" % waitTime)
+            return False
+        else:
+            self.tapByXY(self.width/2,self.height/2)
+            if self.waitEleClick(BP.PREVIEWCLOSE,seconds=5):
+                return True
+            else:
+                times+=1
+                logger.info("closePreivewOrPopupDisplay尝试第%s次" % waitTime)
+                return self.closePreivewOrPopupDisplay(times,waitTime)
 
     def scrollDownDisplay(self,ele):
         if ele.is_displayed():
@@ -1058,6 +1068,20 @@ class BasePageAction():
         return res_count_bool
 
 
+    def searchTitle(self,hotword,searchKey):
+        if not hotword:
+            res = self.menus
+            hotword = res[0]["hotWords"]
+        self.waitEleClick((BP.IDTOBE[0],BP.IDTOBE[1] % hotword))
+        searchInput = self.waitEleVisiable((BP.SEARCHINPUT[0],BP.SEARCHINPUT[1] % hotword))
+        if searchInput:
+            searchInput.send_keys(searchKey)
+            return self.waitEleClick((BP.SEARCHRESULT[0],BP.SEARCHRESULT[1] % searchKey))
+        return False
+
+
+
+
     def clickHotWord(self):
         hotword = appGetHotWordNew()
         for i in range(0,3):
@@ -1135,6 +1159,10 @@ class BasePageAction():
             self.getBackFromList()
             return False
 
+
+
+
+
     def checkTitleIntroduce(self,titleNo):
         title = self.getTitleFromList2(titleNo)
         titleInfo = appTitleInfo2(titleNo)
@@ -1185,6 +1213,61 @@ class BasePageAction():
                 return res1 and res2 and res3 and res4 and res5
         else:
             return False
+
+
+
+
+    def checkSearchResultAndComment(self,titleNo,randomCount=1):
+        if self.checkTitleTopBottomViewer(titleNo):
+            title = self.getTitleFromList2(titleNo)
+            episode_list = appEpisodeListV3(titleNo)
+            # hide_episode = appEpisodeListHide(titleNo)
+            if episode_list:
+                freeepisode = episode_list["episode"]
+                episode_list_filter = list(filter(lambda x: x["serviceStatus"] == "SERVICE", freeepisode))
+                viewerType = title["viewer"]
+                return self.checkSearchResultAndCommentListData(episode_list_filter,viewerType,randomCount,maxTimes=100)
+            else:
+                return False
+        else:
+            return False
+
+
+
+    def checkSearchResultAndCommentListData(self, data,viewerType, randomCount=1,maxTimes = 10):
+        data_length = len(data)
+        if data_length < randomCount:
+            randomData = self.getRandomInts(data_length, data_length,reverse=True)
+        else:
+            randomData = self.getRandomInts(data_length, randomCount,reverse=True)
+        count = 0
+        for i in range(0,data_length):
+            episodeSeq = data[i]["episodeSeq"]
+            if episodeSeq in randomData:
+                if viewerType == "ACTIVITYAREA":
+                    if self.checkChildElePresent((BP.LISTEPISODECELL[0], BP.LISTEPISODECELL[1] % episodeSeq),
+                                                     (BP.IDTOBE[0], BP.IDTOBE[1] % data[i]["episodeTitle"]), maxTimes = maxTimes):
+
+                        if self.waitEleClick((BP.LISTEPISODECELL[0], BP.LISTEPISODECELL[1] % episodeSeq)):
+                            if self.checkViewer(data[i]["titleNo"],episodeNo=data[i]["episodeNo"],history=False):
+                                count +=1
+
+                else:
+                    seqText = "#%s" % data[i]["episodeSeq"]
+                    if self.checkChildElesPresent((BP.LISTEPISODECELL[0], BP.LISTEPISODECELL[1] % episodeSeq),
+                                                      [(BP.IDTOBE[0], BP.IDTOBE[1] % data[i]["episodeTitle"]),
+                                                       (BP.IDTOBE[0], BP.IDTOBE[1] % seqText)], maxTimes=maxTimes):
+                        if self.waitEleClick((BP.LISTEPISODECELL[0], BP.LISTEPISODECELL[1] % episodeSeq)):
+                            if self.checkViewer(data[i]["titleNo"],episodeNo=data[i]["episodeNo"],history=False):
+                                count +=1
+
+        if count == len(randomData):
+            return self.getBackFromList()
+        else:
+            self.getBackFromList()
+            return False
+
+
 
 
     def getTitleFromList2(self,titleNo=""):
@@ -2110,9 +2193,37 @@ class BasePageAction():
             return True
 
 
+    def getParentEle(self,ele):
+        logger.info("getParentEle获取子元素%s的父元素" % ele.text)
+        return ele.parent
+
+    def getParentByLoc(self,loc):
+        ele = self.waitElePresents(loc)
+        if ele:
+            return self.getParentEle(ele)
+        return False
+
+    def getParentByVisiableLoc(self,loc):
+        ele = self.waitEleVisiable(loc)
+        if ele:
+            return self.getParentEle(ele)
+        return False
+
+    def getSubeleByParent(self,ele,loc):
+        return self.findSubElement(ele,loc)
+
+    def getSubeleVisByParent(self,ele,loc):
+        subEle = self.findSubElement(ele,loc)
+        if subEle:
+            if subEle.is_displayed():
+                return subEle
+        return False
+
+
+
 if __name__ == "__main__":
     pass
-    bpa = BasePageAction(1,2,3,4,5,6,7,8)
+    bpa = BasePageAction(1,2,3,4,5,6,7,8,9,0)
     # print(bpa.handleTitleLikeCount(999))
     # print(bpa.handleTitleLikeCount(123123))
     # print(bpa.handleTitleLikeCount(2214523))
@@ -2123,4 +2234,5 @@ if __name__ == "__main__":
     # a = list(bpa.getWeekday())
     # for i in a:
     #     print(i,a.index(i))
+    bpa.savePNG("sdfsd")
 

@@ -11,7 +11,7 @@ from ..pageaction.discoveryPageAction import DiscoveryPageAction as DPA
 from ..pageaction.updatePageAction import UpdagePageAction as UPA
 from ..pageaction.myCartoonPageAction import MyCartoonPageAction as MCPA
 from ..login import login,Config
-from ..interface import appTitleList2,appHome4,appHomeMenus,appHomeMenuDetail
+from ..interface import appTitleList2,appHome4,appHomeMenus,appHomeMenuDetail,appHome4New
 from ..login import getConfig,setConfig
 from cn.dm.src.handleSqlite import getConfig as gc,updateConfig
 from faker import Faker
@@ -44,12 +44,13 @@ class BaseTestcase(unittest.TestCase):
         desired_caps["waitForQuiescence"] = False
         desired_caps["wdaEventloopIdleDelay"] = 30
         desired_caps["useJSONSource"]=True
-        desired_caps["showXcodeLog"] = True
+        # desired_caps["showXcodeLog"] = True
         desired_caps['platformName'] = 'iOS'
         desired_caps["showIOSLog"] = False
         desired_caps['clearSystemFiles'] = True
         desired_caps["language"] = "zh"
         desired_caps["locale"] = "CN"
+        desired_caps["newCommandTimeout"] = 120
 
 
         # simulator
@@ -111,7 +112,7 @@ class BaseTestcase(unittest.TestCase):
             updateConfig("skip_login","0")
         cls.data = appTitleList2()  ##list2，请求的数据
         login(Config("mobile"), Config("passwd"), "PHONE_NUMBER")
-        cls.home = appHome4()
+        cls.home = appHome4New()
         cls.menus = appHomeMenus()
         cls.menusDetail = []
         for i in cls.menus:

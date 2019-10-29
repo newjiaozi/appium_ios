@@ -127,7 +127,8 @@ class BasePage():
 
     ##检索
     SEARCHCANCEL = (By.ACCESSIBILITY_ID,"取消")
-    SEARCHINPUT = (By.IOS_PREDICATE,'type== "XCUIElementTypeTextField" and  value == "搜索"')
+    SEARCHINPUT = [By.IOS_PREDICATE,'type== "XCUIElementTypeTextField" and  value == "%s"']
+    SEARCHRESULT = [By.IOS_PREDICATE,'type== "XCUIElementTypeStaticText" and  name == "%s" and visible == 1']
     SEARCHLOVE = (By.ACCESSIBILITY_ID,"search_love")
     SEARCHBOY = (By.ACCESSIBILITY_ID,"search_boy")
     SEARCHANCIENTCHINESE = (By.ACCESSIBILITY_ID,"search_ancientchinese")

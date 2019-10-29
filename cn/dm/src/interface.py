@@ -157,6 +157,178 @@ def appHome4(weekday="MONDAY"):
 
 
 
+def appHome4New(weekday="MONDAY"):
+    path ="/app/home4"
+    payload = {"weekday":weekday,"v":1}
+    payload.update(Config("baseparams"))
+    payload.update(getExpiresMd5(path))
+
+    resp = requests.get(Config("httphost")+path,params=payload,headers=Config("headers"),cookies=Config("cookies"))
+    logger.info(resp.url)
+    try:
+        if resp.ok:
+            result = {}
+            resp_json = resp.json()
+            resulttmp = resp_json["message"]["result"]
+
+            ######处理发现页bigbanner
+            topBanner = resulttmp["topBanner"]["bannerList"]
+            if topBanner:
+                result["bigbanner"] = topBanner
+            else:
+                payload.update({"homeDetailDataStatus":"BIG_BANNER_DATA"})
+                respSingle = requests.get(Config("httphost") + path, params=payload, headers=Config("headers"),
+                                    cookies=Config("cookies"))
+                if respSingle.ok:
+                    respSingleJson = respSingle.json()
+                    data = respSingleJson["message"]["result"]["topBanner"]["bannerList"]
+                    result["bigbanner"] = data
+                else:
+                    logger.error(respSingle.url)
+
+            ###咚漫推荐
+            dmRecommend = resulttmp.get("dongmanRecommendContentList",None)
+            if dmRecommend:
+                result["dongman"] = dmRecommend
+            else:
+                payload.update({"homeDetailDataStatus":"RECOMMEND_DATA"})
+                respSingle = requests.get(Config("httphost") + path, params=payload, headers=Config("headers"),
+                                    cookies=Config("cookies"))
+                if respSingle.ok:
+                    respSingleJson = respSingle.json()
+                    data = respSingleJson["message"]["result"]["dongmanRecommendContentList"]
+                    result["dongman"] = data
+                else:
+                    logger.error(respSingle.url)
+
+            ##barbanner
+            barBanners = resulttmp.get("bannerPlacementList", None)
+            if barBanners:
+                result["barbanner"] = barBanners
+            else:
+                payload.update({"homeDetailDataStatus":"PLACEMENT_BANNER_DATA"})
+                respSingle = requests.get(Config("httphost") + path, params=payload, headers=Config("headers"),
+                                    cookies=Config("cookies"))
+                if respSingle.ok:
+                    respSingleJson = respSingle.json()
+                    data = respSingleJson["message"]["result"]["bannerPlacementList"]
+                    result["barbanner"] = data
+                else:
+                    logger.error(respSingle.url)
+
+            ##分类
+            genres = resulttmp.get("genres", None)
+            if genres:
+                result["genre"] = genres
+            else:
+                payload.update({"homeDetailDataStatus":"GENRES_DATA"})
+                respSingle = requests.get(Config("httphost") + path, params=payload, headers=Config("headers"),
+                                    cookies=Config("cookies"))
+                if respSingle.ok:
+                    respSingleJson = respSingle.json()
+                    data = respSingleJson["message"]["result"]["genre"]
+                    result["genre"] = data
+                else:
+                    logger.error(respSingle.url)
+
+            ##主题
+            theme = resulttmp.get("webtoon_collection_list", None)
+            if theme:
+                result["theme"] = theme
+            else:
+                payload.update({"homeDetailDataStatus":"WEBTOON_COLLECTION_DATA"})
+                respSingle = requests.get(Config("httphost") + path, params=payload, headers=Config("headers"),
+                                    cookies=Config("cookies"))
+                if respSingle.ok:
+                    respSingleJson = respSingle.json()
+                    data = respSingleJson["message"]["result"]["webtoon_collection_list"]
+                    result["theme"] = data
+                else:
+                    logger.error(respSingle.url)
+
+            ##排行榜，上升榜，新作榜，总榜
+            ranking = resulttmp.get("ranking", None)
+            if ranking:
+                upRank = ranking.get("titleWeeklyRanking", None)
+                newRank = ranking.get("titleNewRanking", None)
+                totalRank = ranking.get("titleTotalRanking", None)
+                if upRank and newRank and totalRank:
+                    result["uprank"] = upRank
+                    result["newrank"] = newRank
+                    result["totalrank"] = totalRank
+                else:
+                    payload.update({"homeDetailDataStatus": "RANKING_DATA"})
+                    respSingle = requests.get(Config("httphost") + path, params=payload, headers=Config("headers"),
+                                              cookies=Config("cookies"))
+                    if respSingle.ok:
+                        respSingleJson = respSingle.json()
+                        data = respSingleJson["message"]["result"]["ranking"]
+                        result["uprank"] = data["titleWeeklyRanking"]
+                        result["newrank"] = data["titleNewRanking"]
+                        result["totalrank"] = data["titleTotalRanking"]
+                    else:
+                        logger.error(respSingle.url)
+            else:
+                payload.update({"homeDetailDataStatus":"RANKING_DATA"})
+                respSingle = requests.get(Config("httphost") + path, params=payload, headers=Config("headers"),
+                                    cookies=Config("cookies"))
+                if respSingle.ok:
+                    respSingleJson = respSingle.json()
+                    data = respSingleJson["message"]["result"]["ranking"]
+                    result["uprank"] = data["titleWeeklyRanking"]
+                    result["newrank"] = data["titleNewRanking"]
+                    result["totalrank"] = data["titleTotalRanking"]
+                else:
+                    logger.error(respSingle.url)
+
+            ##新作登场
+            newTitle = resulttmp.get("homeNew", None)
+            if newTitle:
+                result["new"] = newTitle
+            else:
+                payload.update({"homeDetailDataStatus":"NEW_TITLE_DATA"})
+                respSingle = requests.get(Config("httphost") + path, params=payload, headers=Config("headers"),
+                                    cookies=Config("cookies"))
+                if respSingle.ok:
+                    respSingleJson = respSingle.json()
+                    data = respSingleJson["message"]["result"]["homeNew"]
+                    result["new"] = data
+                else:
+                    logger.error(respSingle.url)
+
+            ##佳作抢先看
+            leadUpLook = resulttmp.get("leadUpLookList", None)
+            if theme:
+                result["lead"] = leadUpLook
+            else:
+                payload.update({"homeDetailDataStatus":"LEAD_UP_DATA"})
+                respSingle = requests.get(Config("httphost") + path, params=payload, headers=Config("headers"),
+                                    cookies=Config("cookies"))
+                if respSingle.ok:
+                    respSingleJson = respSingle.json()
+                    data = respSingleJson["message"]["result"]["leadUpLookList"]
+                    result["lead"] = data
+                else:
+                    logger.error(respSingle.url)
+
+            ##猜你喜欢
+            # result["like"] = resulttmp["recommend_map_list"]
+            return result
+        else:
+            # logger.error(resp.url)
+            # logger.error(resp.text)
+            return False
+
+    except Exception:
+        logger.error(resp.url)
+        # logger.exception(resp.text)
+        return False
+
+
+
+
+
+
 def appHome4Priority(weekday="MONDAY"):
     path ="/app/home4"
     payload = {"weekday":weekday,"v":1,"homeDetailDataStatus":"LEAD_UP_DATA"}
