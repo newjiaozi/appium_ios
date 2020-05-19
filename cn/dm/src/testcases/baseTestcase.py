@@ -41,21 +41,22 @@ class BaseTestcase(unittest.TestCase):
 
         cls.appPath = app_path
 
-        desired_caps["waitForQuiescence"] = False
-        desired_caps["wdaEventloopIdleDelay"] = 30
+        # desired_caps["waitForQuiescence"] = False
+        # desired_caps["wdaEventloopIdleDelay"] = 60
         desired_caps["useJSONSource"]=True
         # desired_caps["showXcodeLog"] = True
         desired_caps['platformName'] = 'iOS'
         desired_caps["showIOSLog"] = False
         desired_caps['clearSystemFiles'] = True
-        desired_caps["language"] = "zh"
-        desired_caps["locale"] = "CN"
-        desired_caps["newCommandTimeout"] = 120
 
+        # desired_caps['noReset'] = False
 
         # simulator
-        desired_caps["keepKeyChains"] = True
-        desired_caps['deviceName'] = 'iPhone Xs Max'
+        # desired_caps["keepKeyChains"] = True
+        desired_caps['deviceName'] = 'iPhone 8'
+        # desired_caps["language"] = "zh"
+        # desired_caps["locale"] = "CN"
+        # desired_caps["fullReset"] = True
         desired_caps['platformVersion'] = '12.4'
 
         # ## xs max
@@ -84,13 +85,14 @@ class BaseTestcase(unittest.TestCase):
         # desired_caps['platformVersion'] = '12.3.1'
 
         # desired_caps['useNewWDA'] = True
-        desired_caps["xcodeOrgId"]= "R7S9UW83XA"
-        desired_caps["xcodeSigningId"]= "iPhone Developer"
-        desired_caps["keychainPath"] = "/Users/dongman/Library/Keychains/login.keychain-db"
-        desired_caps["keychainPassword"] = "111111"
-        desired_caps['useNewWDA'] = False
+
+        # desired_caps["xcodeOrgId"]= "R7S9UW83XA"
+        # desired_caps["xcodeSigningId"]= "iPhone Developer"
+        # desired_caps["keychainPath"] = "/Users/dongman/Library/Keychains/login.keychain-db"
+        # desired_caps["keychainPassword"] = "111111"
+
+        # desired_caps['useNewWDA'] = False
         # desired_caps["derivedDataPath"]="/Users/dongman/Library/Developer/Xcode/DerivedData/WebDriverAgent-dikkwtrisltbeobjmfvpthwwekvs"
-        desired_caps['noReset'] = False
         desired_caps['app'] = cls.appPath
         desired_caps['newCommandTimeout'] = 200
         # desired_caps['automationName'] = "XCUITest"

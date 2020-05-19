@@ -1,4 +1,6 @@
-#coding=utf-8
+#!/Library/Frameworks/Python.framework/Versions/3.7/bin/python3
+# -*- coding:utf-8 -*-
+
 import sys
 
 pathPycharm = ['/Users/dongman/PycharmProjects/appium_ios']
@@ -22,9 +24,9 @@ def runAllOneByOne():
 
     testCaseList = [
                     MyPageTestcase,##MY页面用例
-                    MyCartoonPageTestcase,##我的漫画用例
-                    DiscoveryPageTestcase,##发现页用例
-                    UpdatePageTestcase,##更新页用例
+                    # MyCartoonPageTestcase,##我的漫画用例
+                    # DiscoveryPageTestcase,##发现页用例
+                    # UpdatePageTestcase,##更新页用例
                     # ScenarioTestcase,##场景测试用例
                     # CommentTestcase,##评论测试用例
                     ]
@@ -44,8 +46,8 @@ def runAllOneByOne():
         except Exception:
             logger.info(report_name)
         finally:
-            time.sleep(20)
-            sendMail(now_time,report_name)
+            # time.sleep(20)
+            # sendMail(now_time,report_name)
             logger.info("%s结束执行##%s%s" % ("*"*30,report_name,"*"*30))
 
 if __name__ == "__main__":

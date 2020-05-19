@@ -285,13 +285,15 @@ class BasePageAction():
         except TimeoutException:
             logger.error("waitEleClick执行TimeoutException,%s" % str(loc))
             self.savePNG("waitEleClickFailed:%s" % str(loc))
-            logger.info("waitEleClick尝试通过坐标点击元素")
-            ele = self.waitElePresents(loc)
-            if ele:
-                self.tapXY(ele)
-                return True
-            else:
-                return False
+            return False
+            # logger.info("waitEleClick尝试通过坐标点击元素")
+            # ele = self.waitElePresents(loc)
+            # if ele:
+            #     self.tapXY(ele)
+            #     return True
+            # else:
+            #     return False
+
 
 
     def switchPage(self,loc,seconds=10,poll_frequency=1):
